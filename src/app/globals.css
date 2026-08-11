@@ -2,16 +2,16 @@
 
 :root {
   /* Light Theme Colors */
-  --bg-primary: #f8fafc;
+  --bg-primary: #fdf2f2;
   --bg-secondary: #ffffff;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --accent-primary: #3b82f6;
-  --accent-hover: #2563eb;
+  --text-primary: #1f0b0b;
+  --text-secondary: #594040;
+  --accent-primary: #ef4444; /* Red 500 */
+  --accent-hover: #dc2626; /* Red 600 */
   --success: #10b981;
   --warning: #f59e0b;
-  --danger: #ef4444;
-  --border-color: #e2e8f0;
+  --danger: #b91c1c; /* Darker red for danger if needed */
+  --border-color: #fee2e2;
   
   /* Glassmorphism */
   --glass-bg: rgba(255, 255, 255, 0.7);
@@ -22,14 +22,14 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* Dark Theme Colors */
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --border-color: #334155;
+    --bg-primary: #1a0f0f;
+    --bg-secondary: #2d1616;
+    --text-primary: #fdf2f2;
+    --text-secondary: #fca5a5;
+    --border-color: #451a1a;
     
     /* Glassmorphism Dark */
-    --glass-bg: rgba(30, 41, 59, 0.7);
+    --glass-bg: rgba(45, 22, 22, 0.7);
     --glass-border: rgba(255, 255, 255, 0.1);
     --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
   }
@@ -61,8 +61,8 @@ body::before {
   width: 100vw;
   height: 100vh;
   background: 
-    radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.15) 0%, transparent 50%);
+    radial-gradient(circle at 15% 50%, rgba(239, 68, 68, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(220, 38, 38, 0.15) 0%, transparent 50%);
   z-index: -1;
   pointer-events: none;
 }
@@ -95,13 +95,13 @@ body::before {
 .btn-primary {
   background-color: var(--accent-primary);
   color: white;
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
 }
 
 .btn-primary:hover {
   background-color: var(--accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 4px 6px rgba(239, 68, 68, 0.4);
 }
 
 .btn-success { background-color: var(--success); color: white; }
@@ -125,7 +125,7 @@ body::before {
 
 .input-field:focus {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
 }
 
 /* Layout Utilities */
