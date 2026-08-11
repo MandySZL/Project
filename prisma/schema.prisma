@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id               String   @id @default(cuid())
+  name             String
+  username         String?
+  password         String?
+  role             String   // "MENTOR" or "ADMIN"
+  totalLeaveDays   Int      @default(0)
+  usedLeaveDays    Int      @default(0)
+
+  // Relations for Mentor
+  requestsAsMentor     LeaveRequest[] @relation("MentorRequests")
+  requestsAsSubstitute LeaveRequest[] @relation("SubstituteRequests")
+  assignedClasses      ClassSession[] @relation("ClassMentors")
+}
+
+model ClassSession {
+  id            String   @id @default(cuid())
+  time          DateTime
+  leaveLimit    Int      @default(1)
+  currentLeaves Int      @default(0) // Can also be calculated, but denormalized for simplicity
+
+  requests      LeaveRequest[]
+  assignedMentors User[] @relation("ClassMentors")
+}
+
+model LeaveRequest {
+  id           String   @id @default(cuid())
+  status       String   // "PENDING_SUBSTITUTE", "PENDING_ADMIN", "APPROVED", "REJECTED"
+  
+  mentorId     String
+  mentor       User     @relation("MentorRequests", fields: [mentorId], references: [id])
+  
+  substituteId String
+  substitute   User     @relation("SubstituteRequests", fields: [substituteId], references: [id])
+  
+  classId      String
+  classSession ClassSession @relation(fields: [classId], references: [id])
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

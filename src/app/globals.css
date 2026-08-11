@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Light Theme Colors */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --accent-primary: #3b82f6;
+  --accent-hover: #2563eb;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --border-color: #e2e8f0;
+  
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark Theme Colors */
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+    
+    /* Glassmorphism Dark */
+    --glass-bg: rgba(30, 41, 59, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  }
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html, body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Background Gradients & Mesh */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: 
+    radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.15) 0%, transparent 50%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Base UI Classes */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.btn-primary {
+  background-color: var(--accent-primary);
+  color: white;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.4);
+}
+
+.btn-success { background-color: var(--success); color: white; }
+.btn-success:hover { filter: brightness(1.1); }
+
+.btn-danger { background-color: var(--danger); color: white; }
+.btn-danger:hover { filter: brightness(1.1); }
+
+.input-field {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.input-field:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Layout Utilities */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 8px; }
+.gap-4 { gap: 16px; }
+.gap-6 { gap: 24px; }
+.mt-4 { margin-top: 16px; }
+.mt-8 { margin-top: 32px; }
+.mb-4 { margin-bottom: 16px; }
+.text-center { text-align: center; }
+.text-sm { font-size: 0.875rem; color: var(--text-secondary); }
+
+/* Badges */
+.badge {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+.badge-approved { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+.badge-rejected { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
