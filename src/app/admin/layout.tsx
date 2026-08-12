@@ -55,7 +55,7 @@ export default function AdminLayout({
           zIndex: 50
         }}
       >
-        <div className="flex items-center justify-center mb-10">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '40px' }}>
           <img
             src="/logo.png"
             alt="Chmbaka Logo"
