@@ -37,17 +37,17 @@ export default function Calendar({ selectedDate, onSelectDate, classDates }: Cal
   return (
     <div style={{ background: 'var(--bg-secondary)', borderRadius: '12px', padding: '16px', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.2)' }}>
       <div className="flex justify-between items-center mb-4">
-        <button 
-          type="button" 
-          onClick={prevMonth} 
-          className="btn transition-colors" 
+        <button
+          type="button"
+          onClick={prevMonth}
+          className="btn transition-colors"
           style={{ padding: '8px 12px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)' }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
         </button>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <select 
-            value={month} 
+          <select
+            value={month}
             onChange={(e) => setCurrentMonth(new Date(year, parseInt(e.target.value), 1))}
             style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '4px 8px', fontWeight: 600, outline: 'none' }}
           >
@@ -55,23 +55,14 @@ export default function Calendar({ selectedDate, onSelectDate, classDates }: Cal
               <option key={m} value={i} style={{ color: 'var(--text-primary)' }}>{m}</option>
             ))}
           </select>
-          <select 
-            value={year} 
-            onChange={(e) => setCurrentMonth(new Date(parseInt(e.target.value), month, 1))}
-            style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '4px 8px', fontWeight: 600, outline: 'none' }}
-          >
-            {[year - 1, year, year + 1].map(y => (
-              <option key={y} value={y} style={{ color: 'var(--text-primary)' }}>{y}</option>
-            ))}
-          </select>
         </div>
-        <button 
-          type="button" 
-          onClick={nextMonth} 
-          className="btn transition-colors" 
+        <button
+          type="button"
+          onClick={nextMonth}
+          className="btn transition-colors"
           style={{ padding: '8px 12px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)' }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
         </button>
       </div>
 
