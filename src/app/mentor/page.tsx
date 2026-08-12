@@ -123,12 +123,13 @@ export default function MentorDashboard() {
   const otherMentors = users.filter(u => u.role === 'MENTOR' && u.id !== currentUser.id);
 
   const safeClasses = Array.isArray(classes) ? classes : [];
-  const selectedClass = safeClasses.find(c => c.id === selectedClassId);
+  const myAssignedClasses = safeClasses.filter(c => c.assignedMentors?.some((am: any) => am.id === currentUser.id));
+  const selectedClass = myAssignedClasses.find(c => c.id === selectedClassId);
   const availableSubstitutes = otherMentors.filter(m => 
     !selectedClass?.assignedMentors?.some((am: any) => am.id === m.id)
   );
 
-  const filteredClasses = safeClasses.filter(c => {
+  const filteredClasses = myAssignedClasses.filter(c => {
     if (!selectedDate) return false;
     const dateObj = new Date(c.time);
     const y = dateObj.getFullYear();
@@ -169,7 +170,7 @@ export default function MentorDashboard() {
                   setSelectedDate(date);
                   setSelectedClassId('');
                 }}
-                classDates={safeClasses.map(c => {
+                classDates={myAssignedClasses.map(c => {
                   const dateObj = new Date(c.time);
                   const y = dateObj.getFullYear();
                   const m = String(dateObj.getMonth() + 1).padStart(2, '0');

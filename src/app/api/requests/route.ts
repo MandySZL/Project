@@ -49,8 +49,26 @@ export async function POST(request: Request) {
     });
     if (!classSession) return NextResponse.json({ error: 'Class not found' }, { status: 404 });
     
+    if (!classSession.assignedMentors.some(m => m.id === mentorId)) {
+      return NextResponse.json({ error: 'You are not assigned to this class session' }, { status: 400 });
+    }
+
     if (classSession.assignedMentors.some(m => m.id === substituteId)) {
       return NextResponse.json({ error: 'Substitute is already assigned to teach this session' }, { status: 400 });
+    }
+
+    // Check if substitute is already requested/approved for this class session in another leave request
+    const existingSubRequest = await prisma.leaveRequest.findFirst({
+      where: {
+        substituteId,
+        classId,
+        status: {
+          in: ['PENDING_SUBSTITUTE', 'PENDING_ADMIN', 'APPROVED']
+        }
+      }
+    });
+    if (existingSubRequest) {
+      return NextResponse.json({ error: 'This mentor has already been requested to substitute for this session' }, { status: 400 });
     }
 
     if (classSession.currentLeaves >= classSession.leaveLimit) {

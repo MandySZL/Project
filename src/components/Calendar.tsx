@@ -40,32 +40,51 @@ export default function Calendar({ selectedDate, onSelectDate, classDates }: Cal
         <button 
           type="button" 
           onClick={prevMonth} 
-          className="btn hover:bg-[rgba(255,255,255,0.2)] transition-colors" 
-          style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
+          className="btn transition-colors" 
+          style={{ padding: '8px 12px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)' }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
-        <div style={{ fontWeight: 600, fontSize: '1.1rem', color: '#fff' }}>{monthNames[month]} {year}</div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <select 
+            value={month} 
+            onChange={(e) => setCurrentMonth(new Date(year, parseInt(e.target.value), 1))}
+            style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '4px 8px', fontWeight: 600, outline: 'none' }}
+          >
+            {monthNames.map((m, i) => (
+              <option key={m} value={i} style={{ color: 'var(--text-primary)' }}>{m}</option>
+            ))}
+          </select>
+          <select 
+            value={year} 
+            onChange={(e) => setCurrentMonth(new Date(parseInt(e.target.value), month, 1))}
+            style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '4px 8px', fontWeight: 600, outline: 'none' }}
+          >
+            {[year - 1, year, year + 1].map(y => (
+              <option key={y} value={y} style={{ color: 'var(--text-primary)' }}>{y}</option>
+            ))}
+          </select>
+        </div>
         <button 
           type="button" 
           onClick={nextMonth} 
-          className="btn hover:bg-[rgba(255,255,255,0.2)] transition-colors" 
-          style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
+          className="btn transition-colors" 
+          style={{ padding: '8px 12px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)' }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
         </button>
       </div>
-      
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', textAlign: 'center', marginBottom: '8px' }}>
         {dayNames.map(d => (
           <div key={d} style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{d}</div>
         ))}
       </div>
-      
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px' }}>
         {days.map((day, idx) => {
           if (!day) return <div key={idx} />;
-          
+
           const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const isSelected = dateStr === selectedDate;
           const hasClass = classDates.includes(dateStr);
@@ -99,10 +118,10 @@ export default function Calendar({ selectedDate, onSelectDate, classDates }: Cal
               }}
             >
               <span>{day}</span>
-              <div style={{ 
-                width: '6px', 
-                height: '6px', 
-                borderRadius: '50%', 
+              <div style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
                 background: hasClass ? 'var(--accent-primary)' : 'transparent'
               }} />
             </button>
