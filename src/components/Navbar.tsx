@@ -13,9 +13,13 @@ export default function Navbar() {
     <nav className="glass-panel" style={{ margin: '24px 24px 0 24px', padding: '16px 24px', borderRadius: '16px' }}>
       <div className="flex justify-between items-center">
         <div className="flex gap-6 items-center">
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
-            MentorLeave
-          </h1>
+          <div className="flex items-center">
+            <img 
+              src="/logo.png" 
+              alt="Chmbaka Logo" 
+              style={{ height: '32px', width: 'auto', objectFit: 'contain' }} 
+            />
+          </div>
           <div className="flex gap-4">
             {currentUser?.role === 'ADMIN' && (
               <>
