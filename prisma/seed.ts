@@ -16,7 +16,7 @@ async function main() {
   const admin = await prisma.user.create({
     data: {
       name: 'System Admin',
-      username: 'admin',
+      email: 'admin@chmbaka.com',
       password: 'password123',
       role: 'ADMIN',
       totalLeaveDays: 0,
@@ -28,7 +28,7 @@ async function main() {
   const mentor1 = await prisma.user.create({
     data: {
       name: 'Alice Mentor',
-      username: 'alice',
+      email: 'alice@chmbaka.com',
       password: 'password123',
       role: 'MENTOR',
       totalLeaveDays: 10,
@@ -39,7 +39,7 @@ async function main() {
   const mentor2 = await prisma.user.create({
     data: {
       name: 'Bob Mentor',
-      username: 'bob',
+      email: 'bob@chmbaka.com',
       password: 'password123',
       role: 'MENTOR',
       totalLeaveDays: 10,
@@ -50,7 +50,7 @@ async function main() {
   const mentor3 = await prisma.user.create({
     data: {
       name: 'Charlie Mentor',
-      username: 'charlie',
+      email: 'charlie@chmbaka.com',
       password: 'password123',
       role: 'MENTOR',
       totalLeaveDays: 10,

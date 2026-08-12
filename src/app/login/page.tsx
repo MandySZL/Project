@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 export default function UnifiedLogin() {
   const { users, currentUser, setCurrentUser } = useUser();
   const router = useRouter();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
@@ -25,11 +25,11 @@ export default function UnifiedLogin() {
     // In a real app this would be an API call to verify password.
     // For MVP, we verify against the context users.
     const user = users.find(u => 
-      u.username?.toLowerCase() === username.trim().toLowerCase()
+      u.email?.toLowerCase() === email.trim().toLowerCase()
     );
     
     if (!user) {
-      setError('Invalid username or account not found.');
+      setError('Invalid email or account not found.');
       return;
     }
 
@@ -53,13 +53,13 @@ export default function UnifiedLogin() {
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Username</label>
+            <label className="text-sm font-medium">Email</label>
             <input 
-              type="text"
+              type="email"
               className="input-field"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="e.g., alice"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="e.g., alice@chmbaka.com"
               required
             />
           </div>
@@ -76,7 +76,7 @@ export default function UnifiedLogin() {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary mt-4" disabled={!username || !password}>
+          <button type="submit" className="btn btn-primary mt-4" disabled={!email || !password}>
             Log In
           </button>
           

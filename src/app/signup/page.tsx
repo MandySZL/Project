@@ -9,6 +9,7 @@ export default function SignupPage() {
   const { refreshUsers } = useUser();
   
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('MENTOR');
   
@@ -21,13 +22,12 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      const generatedUsername = name.trim().toLowerCase().replace(/\s+/g, '');
       const res = await fetch('/api/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, username: generatedUsername, password, role })
+        body: JSON.stringify({ name, email, password, role })
       });
 
       const data = await res.json();
@@ -71,6 +71,18 @@ export default function SignupPage() {
           </div>
 
           <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium">Email</label>
+            <input 
+              type="email"
+              className="input-field"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="e.g., mandy@chmbaka.com"
+              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">Password</label>
             <input 
               type="password"
@@ -95,7 +107,7 @@ export default function SignupPage() {
             </select>
           </div>
 
-          <button type="submit" className="btn btn-primary mt-4" disabled={loading || !name || !password}>
+          <button type="submit" className="btn btn-primary mt-4" disabled={loading || !name || !email || !password}>
             {loading ? 'Creating Account...' : 'Sign Up'}
           </button>
           

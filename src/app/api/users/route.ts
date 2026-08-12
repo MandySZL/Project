@@ -16,9 +16,9 @@ export async function GET() {
 }
 export async function POST(req: Request) {
   try {
-    const { name, username, password, role } = await req.json();
+    const { name, email, password, role } = await req.json();
 
-    if (!name || !username || !password || !role) {
+    if (!name || !email || !password || !role) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     const newUser = await prisma.user.create({
       data: {
         name,
-        username,
+        email,
         password,
         role,
         totalLeaveDays,
@@ -39,9 +39,9 @@ export async function POST(req: Request) {
     return NextResponse.json(newUser, { status: 201 });
   } catch (error: any) {
     console.error(error);
-    // Handle potential unique constraint errors (e.g., username already exists)
+    // Handle potential unique constraint errors (e.g., email already exists)
     if (error.code === 'P2002') {
-      return NextResponse.json({ error: 'Username already exists' }, { status: 409 });
+      return NextResponse.json({ error: 'Email already exists' }, { status: 409 });
     }
     return NextResponse.json({ error: error.message || 'Failed to create user' }, { status: 500 });
   }
