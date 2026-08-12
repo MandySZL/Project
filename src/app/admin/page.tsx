@@ -56,8 +56,8 @@ export default function AdminLeaveApprovalsPage() {
 
   return (
     <div className="glass-panel">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Admin - Leave Approvals</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>Admin - Leave Approvals</h2>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
             className={`btn ${activeTab === 'PENDING' ? 'btn-primary' : 'btn-outline'}`}
