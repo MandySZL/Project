@@ -52,6 +52,22 @@ export default function AdminLeaveApprovalsPage() {
     }
   };
 
+  const handleDeleteRequest = async (id: string) => {
+    if (!window.confirm('Are you sure you want to remove this leave request?')) return;
+    try {
+      const res = await fetch(`/api/requests/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json();
+        alert('Failed to remove: ' + (data.error || 'Unknown error'));
+        return;
+      }
+      fetchRequests(); 
+    } catch (e) {
+      console.error(e);
+      alert('Failed to remove request');
+    }
+  };
+
   // Auth check is handled by layout
 
   return (
@@ -93,9 +109,7 @@ export default function AdminLeaveApprovalsPage() {
                 {activeTab === 'HISTORY' && (
                   <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Status</th>
                 )}
-                {activeTab === 'PENDING' && (
-                  <th style={{ padding: '12px 8px', color: 'var(--text-secondary)', textAlign: 'right' }}>Actions</th>
-                )}
+                <th style={{ padding: '12px 8px', color: 'var(--text-secondary)', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -124,7 +138,7 @@ export default function AdminLeaveApprovalsPage() {
                       </span>
                     </td>
                   )}
-                  {activeTab === 'PENDING' && (
+                  {activeTab === 'PENDING' ? (
                     <td style={{ padding: '12px 8px', textAlign: 'right' }}>
                       <div className="flex gap-2" style={{ justifyContent: 'flex-end' }}>
                         <button 
@@ -142,6 +156,15 @@ export default function AdminLeaveApprovalsPage() {
                           Reject
                         </button>
                       </div>
+                    </td>
+                  ) : (
+                    <td style={{ padding: '12px 8px', textAlign: 'right' }}>
+                      <button 
+                        onClick={() => handleDeleteRequest(req.id)}
+                        style={{ color: 'var(--danger)', fontSize: '0.875rem', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                      >
+                        Remove
+                      </button>
                     </td>
                   )}
                 </tr>
