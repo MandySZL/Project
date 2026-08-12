@@ -6,11 +6,11 @@ import Calendar from '../../components/Calendar';
 
 export default function MentorDashboard() {
   const { currentUser, users } = useUser();
-  
+
   const [myRequests, setMyRequests] = useState<any[]>([]);
   const [substituteRequests, setSubstituteRequests] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
-  
+
   const [selectedClassId, setSelectedClassId] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedSubstituteId, setSelectedSubstituteId] = useState('');
@@ -42,12 +42,12 @@ export default function MentorDashboard() {
 
   useEffect(() => {
     fetchData();
-    
+
     // Auto-refresh data every 5 seconds
     const intervalId = setInterval(() => {
       fetchData();
     }, 5000);
-    
+
     return () => clearInterval(intervalId);
   }, [currentUser]);
 
@@ -57,7 +57,7 @@ export default function MentorDashboard() {
       setError('Please select both a class and a substitute.');
       return;
     }
-    
+
     setSubmitting(true);
     setError('');
 
@@ -124,7 +124,7 @@ export default function MentorDashboard() {
 
   const safeClasses = Array.isArray(classes) ? classes : [];
   const selectedClass = safeClasses.find(c => c.id === selectedClassId);
-  const availableSubstitutes = otherMentors.filter(m => 
+  const availableSubstitutes = otherMentors.filter(m =>
     !selectedClass?.assignedMentors?.some((am: any) => am.id === m.id)
   );
 
@@ -151,9 +151,9 @@ export default function MentorDashboard() {
 
       <div className="flex gap-8 flex-col lg:flex-row">
         {/* 2. Request Leave Form */}
-        <div className="glass-panel flex-1">
+        <div className="glass-panel flex-1" style={{ height: '750px', overflowY: 'auto' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '20px' }}>Request New Leave</h2>
-          
+
           {error && (
             <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '8px', marginBottom: '16px' }}>
               {error}
@@ -163,7 +163,7 @@ export default function MentorDashboard() {
           <form onSubmit={handleRequestLeave} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium">Select Date</label>
-              <Calendar 
+              <Calendar
                 selectedDate={selectedDate}
                 onSelectDate={(date) => {
                   setSelectedDate(date);
@@ -179,27 +179,30 @@ export default function MentorDashboard() {
               />
             </div>
 
-            {selectedDate && (
-              <div className="flex flex-col gap-2 mt-2">
-                <label className="text-sm font-medium">Select Session</label>
-                {filteredClasses.length === 0 ? (
-                  <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    No classes scheduled for this date.
-                  </div>
+            <div className="flex flex-col gap-2 mt-2" style={{ minHeight: '120px' }}>
+              <label className="text-sm font-medium">Select Session</label>
+              {!selectedDate ? (
+                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  Please select a date from the calendar first.
+                </div>
+              ) : filteredClasses.length === 0 ? (
+                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  No classes scheduled for this date.
+                </div>
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
                     {filteredClasses.map(c => {
                       const slotsLeft = c.leaveLimit - c.currentLeaves;
-                      
+
                       // Check if mentor already has an active request for this class
-                      const hasActiveRequest = myRequests.some(req => 
-                        req.classId === c.id && 
+                      const hasActiveRequest = myRequests.some(req =>
+                        req.classId === c.id &&
                         ['PENDING_SUBSTITUTE', 'PENDING_ADMIN', 'APPROVED'].includes(req.status)
                       );
-                      
+
                       const isFull = slotsLeft <= 0;
                       const isDisabled = isFull || hasActiveRequest;
-                      
+
                       const timeStr = new Date(c.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                       const isSelected = selectedClassId === c.id;
 
@@ -225,10 +228,10 @@ export default function MentorDashboard() {
                           }}
                         >
                           <div style={{ fontSize: '1.25rem', fontWeight: 600 }}>{timeStr}</div>
-                          <span style={{ 
-                            padding: '4px 8px', 
-                            borderRadius: '4px', 
-                            fontSize: '0.75rem', 
+                          <span style={{
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontSize: '0.75rem',
                             fontWeight: 600,
                             background: isDisabled ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
                             color: isDisabled ? '#fca5a5' : '#6ee7b7',
@@ -241,12 +244,11 @@ export default function MentorDashboard() {
                     })}
                   </div>
                 )}
-              </div>
-            )}
+            </div>
 
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium">Select Substitute Mentor</label>
-              <select 
+              <select
                 className="input-field"
                 value={selectedSubstituteId}
                 onChange={(e) => setSelectedSubstituteId(e.target.value)}
@@ -263,44 +265,50 @@ export default function MentorDashboard() {
               </select>
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn btn-primary mt-2"
               disabled={submitting || remainingDays <= 0}
             >
               {submitting ? 'Submitting...' : 'Submit Request'}
             </button>
             {remainingDays <= 0 && (
-               <div className="text-sm text-center" style={{ color: 'var(--danger)' }}>
-                 You have used all your leave days.
-               </div>
+              <div className="text-sm text-center" style={{ color: 'var(--danger)' }}>
+                You have used all your leave days.
+              </div>
             )}
           </form>
         </div>
 
         {/* Action Needed: Substitute Requests */}
-        {substituteRequests.length > 0 && (
-          <div className="glass-panel flex-1" style={{ border: '1px solid var(--warning)' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '16px', color: 'var(--warning)' }}>
-              Action Needed: Substitute Requests
-            </h2>
-            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-              Other mentors have requested you to substitute for them.
-            </p>
-            <div className="flex flex-col gap-4">
-              {substituteRequests.map(req => (
-                <div key={req.id} style={{ padding: '12px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
-                  <div className="font-medium mb-1">{req.mentor.name} needs a substitute</div>
-                  <div className="text-sm mb-3">{new Date(req.classSession.time).toLocaleString()}</div>
-                  <div className="flex gap-2">
-                    <button className="btn btn-success" style={{ flex: 1, padding: '6px' }} onClick={() => handleSubstituteAction(req.id, 'ACCEPT_SUB')}>Accept</button>
-                    <button className="btn btn-danger" style={{ flex: 1, padding: '6px' }} onClick={() => handleSubstituteAction(req.id, 'DECLINE_SUB')}>Decline</button>
+        <div className="glass-panel flex-1" style={{ height: '750px', overflowY: 'auto', border: substituteRequests.length > 0 ? '1px solid var(--warning)' : '1px solid var(--glass-border)' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '16px', color: substituteRequests.length > 0 ? 'var(--warning)' : 'inherit' }}>
+            Action Needed: Substitute Requests
+          </h2>
+          {substituteRequests.length > 0 ? (
+            <>
+              <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+                Other mentors have requested you to substitute for them.
+              </p>
+              <div className="flex flex-col gap-4">
+                {substituteRequests.map(req => (
+                  <div key={req.id} style={{ padding: '12px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
+                    <div className="font-medium mb-1">{req.mentor.name} needs a substitute</div>
+                    <div className="text-sm mb-3">{new Date(req.classSession.time).toLocaleString()}</div>
+                    <div className="flex gap-2">
+                      <button className="btn btn-success" style={{ flex: 1, padding: '6px' }} onClick={() => handleSubstituteAction(req.id, 'ACCEPT_SUB')}>Accept</button>
+                      <button className="btn btn-danger" style={{ flex: 1, padding: '6px' }} onClick={() => handleSubstituteAction(req.id, 'DECLINE_SUB')}>Decline</button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="text-sm text-center flex items-center justify-center h-full" style={{ padding: '24px 0', color: 'var(--text-secondary)', minHeight: '200px' }}>
+              No pending substitute requests.
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* 3. My Leave Requests List */}
@@ -331,16 +339,15 @@ export default function MentorDashboard() {
                       {req.substitute.name}
                     </td>
                     <td style={{ padding: '12px 8px' }}>
-                      <span className={`badge ${
-                        req.status === 'APPROVED' ? 'badge-approved' : 
-                        req.status === 'REJECTED' ? 'badge-rejected' : 
-                        'badge-pending'
-                      }`}>
+                      <span className={`badge ${req.status === 'APPROVED' ? 'badge-approved' :
+                          req.status === 'REJECTED' ? 'badge-rejected' :
+                            'badge-pending'
+                        }`}>
                         {req.status.replace('_', ' ')}
                       </span>
                     </td>
                     <td style={{ padding: '12px 8px', textAlign: 'right' }}>
-                      <button 
+                      <button
                         onClick={() => handleDeleteRequest(req.id)}
                         style={{ color: 'var(--danger)', fontSize: '0.875rem', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
                       >
