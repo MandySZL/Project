@@ -17,7 +17,7 @@ export default function Navbar() {
             <img 
               src="/logo.png" 
               alt="Chmbaka Logo" 
-              style={{ height: '32px', width: 'auto', objectFit: 'contain' }} 
+              style={{ height: '48px', width: 'auto', objectFit: 'contain' }} 
             />
           </div>
           <div className="flex gap-4">
