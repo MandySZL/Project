@@ -11,7 +11,13 @@ export async function GET(request: Request) {
     let where: any = {};
     if (mentorId) where.mentorId = mentorId;
     if (substituteId) where.substituteId = substituteId;
-    if (status) where.status = status;
+    if (status) {
+      if (status.includes(',')) {
+        where.status = { in: status.split(',') };
+      } else {
+        where.status = status;
+      }
+    }
 
     const requests = await prisma.leaveRequest.findMany({
       where,
