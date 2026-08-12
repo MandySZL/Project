@@ -149,166 +149,181 @@ export default function MentorDashboard() {
         </div>
       </div>
 
-      <div className="flex gap-8 flex-col lg:flex-row">
-        {/* 2. Request Leave Form */}
-        <div className="glass-panel flex-1" style={{ height: '750px', overflowY: 'auto' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '20px' }}>Request New Leave</h2>
+      {/* 2. Request Leave Form */}
+      <div className="glass-panel w-full">
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '20px' }}>Request New Leave</h2>
 
-          {error && (
-            <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '8px', marginBottom: '16px' }}>
-              {error}
-            </div>
-          )}
+        {error && (
+          <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '8px', marginBottom: '16px' }}>
+            {error}
+          </div>
+        )}
 
-          <form onSubmit={handleRequestLeave} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Select Date</label>
-              <Calendar
-                selectedDate={selectedDate}
-                onSelectDate={(date) => {
-                  setSelectedDate(date);
-                  setSelectedClassId('');
-                }}
-                classDates={safeClasses.map(c => {
-                  const dateObj = new Date(c.time);
-                  const y = dateObj.getFullYear();
-                  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-                  const d = String(dateObj.getDate()).padStart(2, '0');
-                  return `${y}-${m}-${d}`;
-                })}
-              />
-            </div>
+        <form onSubmit={handleRequestLeave} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium">Select Date</label>
+            <Calendar
+              selectedDate={selectedDate}
+              onSelectDate={(date) => {
+                setSelectedDate(date);
+                setSelectedClassId('');
+              }}
+              classDates={safeClasses.map(c => {
+                const dateObj = new Date(c.time);
+                const y = dateObj.getFullYear();
+                const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const d = String(dateObj.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+              })}
+            />
+          </div>
 
-            <div className="flex flex-col gap-2 mt-2" style={{ minHeight: '120px' }}>
-              <label className="text-sm font-medium">Select Session</label>
-              {!selectedDate ? (
-                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  Please select a date from the calendar first.
+          <div className="flex flex-col gap-2 mt-2" style={{ minHeight: '120px' }}>
+            <label className="text-sm font-medium">Select Session</label>
+            {!selectedDate ? (
+              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                Please select a date from the calendar first.
+              </div>
+            ) : filteredClasses.length === 0 ? (
+              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                No classes scheduled for this date.
+              </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
+                  {filteredClasses.map(c => {
+                    const slotsLeft = c.leaveLimit - c.currentLeaves;
+
+                    // Check if mentor already has an active request for this class
+                    const hasActiveRequest = myRequests.some(req =>
+                      req.classId === c.id &&
+                      ['PENDING_SUBSTITUTE', 'PENDING_ADMIN', 'APPROVED'].includes(req.status)
+                    );
+
+                    const isFull = slotsLeft <= 0;
+                    const isDisabled = isFull || hasActiveRequest;
+
+                    const timeStr = new Date(c.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const isSelected = selectedClassId === c.id;
+
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        disabled={isDisabled}
+                        onClick={() => setSelectedClassId(c.id)}
+                        style={{
+                          padding: '16px',
+                          borderRadius: '12px',
+                          border: isSelected ? '2px solid var(--accent-primary)' : '1px solid rgba(255,255,255,0.2)',
+                          background: isSelected ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255,255,255,0.05)',
+                          textAlign: 'left',
+                          cursor: isDisabled ? 'not-allowed' : 'pointer',
+                          opacity: isDisabled ? 0.5 : 1,
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '8px',
+                          color: isSelected ? '#fff' : 'inherit'
+                        }}
+                      >
+                        <div style={{ fontSize: '1.25rem', fontWeight: 600 }}>{timeStr}</div>
+                        <span style={{
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          background: isDisabled ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                          color: isDisabled ? '#fca5a5' : '#6ee7b7',
+                          alignSelf: 'flex-start'
+                        }}>
+                          {hasActiveRequest ? 'Already Requested' : isFull ? 'No Slots' : `${slotsLeft} Slot(s) Left`}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
-              ) : filteredClasses.length === 0 ? (
-                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  No classes scheduled for this date.
-                </div>
-                ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
-                    {filteredClasses.map(c => {
-                      const slotsLeft = c.leaveLimit - c.currentLeaves;
+              )}
+          </div>
 
-                      // Check if mentor already has an active request for this class
-                      const hasActiveRequest = myRequests.some(req =>
-                        req.classId === c.id &&
-                        ['PENDING_SUBSTITUTE', 'PENDING_ADMIN', 'APPROVED'].includes(req.status)
-                      );
-
-                      const isFull = slotsLeft <= 0;
-                      const isDisabled = isFull || hasActiveRequest;
-
-                      const timeStr = new Date(c.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                      const isSelected = selectedClassId === c.id;
-
-                      return (
-                        <button
-                          key={c.id}
-                          type="button"
-                          disabled={isDisabled}
-                          onClick={() => setSelectedClassId(c.id)}
-                          style={{
-                            padding: '16px',
-                            borderRadius: '12px',
-                            border: isSelected ? '2px solid var(--accent-primary)' : '1px solid rgba(255,255,255,0.2)',
-                            background: isSelected ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255,255,255,0.05)',
-                            textAlign: 'left',
-                            cursor: isDisabled ? 'not-allowed' : 'pointer',
-                            opacity: isDisabled ? 0.5 : 1,
-                            transition: 'all 0.2s',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '8px',
-                            color: isSelected ? '#fff' : 'inherit'
-                          }}
-                        >
-                          <div style={{ fontSize: '1.25rem', fontWeight: 600 }}>{timeStr}</div>
-                          <span style={{
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            background: isDisabled ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                            color: isDisabled ? '#fca5a5' : '#6ee7b7',
-                            alignSelf: 'flex-start'
-                          }}>
-                            {hasActiveRequest ? 'Already Requested' : isFull ? 'No Slots' : `${slotsLeft} Slot(s) Left`}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Select Substitute Mentor</label>
-              <select
-                className="input-field"
-                value={selectedSubstituteId}
-                onChange={(e) => setSelectedSubstituteId(e.target.value)}
-                disabled={!selectedClassId}
-              >
-                <option value="">
-                  {!selectedClassId ? '-- Please select a session first --' : '-- Choose a substitute --'}
-                </option>
-                {availableSubstitutes.map(m => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              className="btn btn-primary mt-2"
-              disabled={submitting || remainingDays <= 0}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium">Select Substitute Mentor</label>
+            <select
+              className="input-field"
+              value={selectedSubstituteId}
+              onChange={(e) => setSelectedSubstituteId(e.target.value)}
+              disabled={!selectedClassId}
             >
-              {submitting ? 'Submitting...' : 'Submit Request'}
-            </button>
-            {remainingDays <= 0 && (
-              <div className="text-sm text-center" style={{ color: 'var(--danger)' }}>
-                You have used all your leave days.
-              </div>
-            )}
-          </form>
-        </div>
+              <option value="">
+                {!selectedClassId ? '-- Please select a session first --' : '-- Choose a substitute --'}
+              </option>
+              {availableSubstitutes.map(m => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        {/* Action Needed: Substitute Requests */}
-        <div className="glass-panel flex-1" style={{ height: '750px', overflowY: 'auto', border: substituteRequests.length > 0 ? '1px solid var(--warning)' : '1px solid var(--glass-border)' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '16px', color: substituteRequests.length > 0 ? 'var(--warning)' : 'inherit' }}>
-            Action Needed: Substitute Requests
-          </h2>
-          {substituteRequests.length > 0 ? (
-            <>
-              <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-                Other mentors have requested you to substitute for them.
-              </p>
-              <div className="flex flex-col gap-4">
-                {substituteRequests.map(req => (
-                  <div key={req.id} style={{ padding: '12px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
-                    <div className="font-medium mb-1">{req.mentor.name} needs a substitute</div>
-                    <div className="text-sm mb-3">{new Date(req.classSession.time).toLocaleString()}</div>
-                    <div className="flex gap-2">
-                      <button className="btn btn-success" style={{ flex: 1, padding: '6px' }} onClick={() => handleSubstituteAction(req.id, 'ACCEPT_SUB')}>Accept</button>
-                      <button className="btn btn-danger" style={{ flex: 1, padding: '6px' }} onClick={() => handleSubstituteAction(req.id, 'DECLINE_SUB')}>Decline</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="text-sm text-center flex items-center justify-center h-full" style={{ padding: '24px 0', color: 'var(--text-secondary)', minHeight: '200px' }}>
-              No pending substitute requests.
+          <button
+            type="submit"
+            className="btn btn-primary mt-2"
+            disabled={submitting || remainingDays <= 0}
+          >
+            {submitting ? 'Submitting...' : 'Submit Request'}
+          </button>
+          {remainingDays <= 0 && (
+            <div className="text-sm text-center" style={{ color: 'var(--danger)' }}>
+              You have used all your leave days.
             </div>
           )}
-        </div>
+        </form>
+      </div>
+
+      {/* Action Needed: Substitute Requests */}
+      <div className="glass-panel w-full" style={{ border: substituteRequests.length > 0 ? '1px solid var(--warning)' : '1px solid var(--glass-border)' }}>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '16px', color: substituteRequests.length > 0 ? 'var(--warning)' : 'inherit' }}>
+          Action Needed: Substitute Requests
+        </h2>
+        {substituteRequests.length > 0 ? (
+          <>
+            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+              Other mentors have requested you to substitute for them.
+            </p>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Requesting Mentor</th>
+                    <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Class Date</th>
+                    <th style={{ padding: '12px 8px', color: 'var(--text-secondary)', textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {substituteRequests.map(req => (
+                    <tr key={req.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <td style={{ padding: '12px 8px' }}>
+                        <div className="font-medium">{req.mentor.name}</div>
+                      </td>
+                      <td style={{ padding: '12px 8px' }}>
+                        {new Date(req.classSession.time).toLocaleString()}
+                      </td>
+                      <td style={{ padding: '12px 8px', textAlign: 'right' }}>
+                        <div className="flex gap-2 justify-end">
+                          <button className="btn btn-success" style={{ padding: '6px 16px' }} onClick={() => handleSubstituteAction(req.id, 'ACCEPT_SUB')}>Accept</button>
+                          <button className="btn btn-danger" style={{ padding: '6px 16px' }} onClick={() => handleSubstituteAction(req.id, 'DECLINE_SUB')}>Decline</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        ) : (
+          <div className="text-sm text-center flex items-center justify-center" style={{ padding: '24px 0', color: 'var(--text-secondary)' }}>
+            No pending substitute requests.
+          </div>
+        )}
       </div>
 
       {/* 3. My Leave Requests List */}
