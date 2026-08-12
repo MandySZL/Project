@@ -7,8 +7,8 @@ import { useUser } from '../contexts/UserContext';
 export default function Navbar() {
   const { currentUser, setCurrentUser, users } = useUser();
 
-  // Return null for ADMIN to hide the top navbar, since they have a full sidebar
-  if (currentUser?.role === 'ADMIN') {
+  // Return null for ADMIN and MENTOR to hide the top navbar, since they have full sidebars
+  if (currentUser?.role === 'ADMIN' || currentUser?.role === 'MENTOR') {
     return null;
   }
 
