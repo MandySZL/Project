@@ -7,17 +7,20 @@ import { useUser } from '../contexts/UserContext';
 export default function Navbar() {
   const { currentUser, setCurrentUser, users } = useUser();
 
-  // Remove early return to show the navbar even when logged out
+  // Return null for ADMIN to hide the top navbar, since they have a full sidebar
+  if (currentUser?.role === 'ADMIN') {
+    return null;
+  }
 
   return (
     <nav className="glass-panel" style={{ margin: '24px 24px 0 24px', padding: '16px 24px', borderRadius: '16px' }}>
       <div className="flex justify-between items-center">
         <div className="flex gap-6 items-center">
           <div className="flex items-center">
-            <img 
-              src="/logo.png" 
-              alt="Chmbaka Logo" 
-              style={{ height: '48px', width: 'auto', objectFit: 'contain' }} 
+            <img
+              src="/logo.png"
+              alt="Chmbaka Logo"
+              style={{ height: '48px', width: 'auto', objectFit: 'contain' }}
             />
           </div>
           <div className="flex gap-4">
@@ -37,24 +40,24 @@ export default function Navbar() {
           </div>
         </div>
 
-      {currentUser && (
-        <div className="flex items-center gap-4">
-          <div style={{ fontSize: '0.875rem' }}>
-            <span style={{ color: 'var(--text-secondary)' }}>Welcome, </span>
-            <span style={{ fontWeight: 600 }}>{currentUser.name} ({currentUser.role})</span>
+        {currentUser && (
+          <div className="flex items-center gap-4">
+            <div style={{ fontSize: '0.875rem' }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Welcome, </span>
+              <span style={{ fontWeight: 600 }}>{currentUser.name} ({currentUser.role})</span>
+            </div>
+            <button
+              className="btn btn-danger"
+              style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+              onClick={() => {
+                setCurrentUser(null);
+                window.location.href = '/';
+              }}
+            >
+              Log Out
+            </button>
           </div>
-          <button 
-            className="btn btn-danger" 
-            style={{ padding: '6px 12px', fontSize: '0.85rem' }}
-            onClick={() => {
-              setCurrentUser(null);
-              window.location.href = '/';
-            }}
-          >
-            Log Out
-          </button>
-        </div>
-      )}
+        )}
       </div>
     </nav>
   );
