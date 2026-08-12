@@ -78,7 +78,7 @@ export default function SubstituteRequestsPage() {
                         {new Date(req.classSession.time).toLocaleString()}
                       </td>
                       <td style={{ padding: '12px 8px', textAlign: 'right' }}>
-                        <div className="flex gap-2 justify-end">
+                        <div className="flex gap-2" style={{ justifyContent: 'flex-end' }}>
                           <button className="btn btn-success" style={{ padding: '6px 16px' }} onClick={() => handleSubstituteAction(req.id, 'ACCEPT_SUB')}>Accept</button>
                           <button className="btn btn-danger" style={{ padding: '6px 16px' }} onClick={() => handleSubstituteAction(req.id, 'DECLINE_SUB')}>Decline</button>
                         </div>
