@@ -59,7 +59,7 @@ export default function MentorLayout({
           <img 
             src="/logo.png" 
             alt="Chmbaka Logo" 
-            style={{ height: '48px', width: 'auto', objectFit: 'contain' }} 
+            style={{ height: '64px', width: 'auto', objectFit: 'contain' }} 
           />
         </div>
         
