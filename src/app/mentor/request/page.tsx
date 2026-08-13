@@ -118,13 +118,22 @@ export default function RequestLeavePage() {
                 setSelectedDate(date);
                 setSelectedClassId('');
               }}
-              classDates={safeClasses.map(c => {
-                const dateObj = new Date(c.time);
-                const y = dateObj.getFullYear();
-                const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const d = String(dateObj.getDate()).padStart(2, '0');
-                return `${y}-${m}-${d}`;
-              })}
+              classDates={safeClasses
+                .filter(c => {
+                  const slotsLeft = c.leaveLimit - c.currentLeaves;
+                  const hasActiveRequest = myRequests.some(req =>
+                    req.classId === c.id &&
+                    ['PENDING_SUBSTITUTE', 'PENDING_ADMIN', 'APPROVED'].includes(req.status)
+                  );
+                  return slotsLeft > 0 && !hasActiveRequest;
+                })
+                .map(c => {
+                  const dateObj = new Date(c.time);
+                  const y = dateObj.getFullYear();
+                  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                  const d = String(dateObj.getDate()).padStart(2, '0');
+                  return `${y}-${m}-${d}`;
+                })}
             />
           </div>
 
