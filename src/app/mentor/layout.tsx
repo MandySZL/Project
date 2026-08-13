@@ -20,7 +20,7 @@ export default function MentorLayout({
     const fetchPending = async () => {
       if (!currentUser?.id || currentUser.role !== 'MENTOR') return;
       try {
-        const res = await fetch(`/api/requests?substituteId=${currentUser.id}&status=PENDING_SUBSTITUTE`);
+        const res = await fetch(`/api/requests?substituteId=${currentUser.id}&status=PENDING_SUBSTITUTE&_t=${Date.now()}`);
         if (res.ok) {
           const data = await res.json();
           setPendingSubCount(data.length);

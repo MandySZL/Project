@@ -14,6 +14,28 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [checked, setChecked] = useState(false);
+  const [pendingAdminCount, setPendingAdminCount] = useState(0);
+
+  useEffect(() => {
+    const fetchPending = async () => {
+      if (!currentUser?.id || currentUser.role !== 'ADMIN') return;
+      try {
+        const res = await fetch(`/api/requests?status=PENDING_ADMIN&_t=${Date.now()}`);
+        if (res.ok) {
+          const data = await res.json();
+          setPendingAdminCount(data.length);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    
+    if (currentUser?.role === 'ADMIN') {
+      fetchPending();
+      const intervalId = setInterval(fetchPending, 5000);
+      return () => clearInterval(intervalId);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     if (!currentUser) {
@@ -67,7 +89,7 @@ export default function AdminLayout({
           href="/admin"
           className="btn"
           style={{
-            justifyContent: 'flex-start',
+            justifyContent: 'space-between',
             background: pathname === '/admin' ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
             color: pathname === '/admin' ? 'var(--accent-primary)' : 'var(--text-secondary)',
             border: 'none',
@@ -78,7 +100,21 @@ export default function AdminLayout({
             textDecoration: 'none'
           }}
         >
-          Leave Approvals
+          <span>Leave Approvals</span>
+          {pendingAdminCount > 0 && (
+            <span style={{
+              background: 'var(--danger)',
+              color: '#fff',
+              fontSize: '0.75rem',
+              fontWeight: 'bold',
+              padding: '2px 6px',
+              borderRadius: '10px',
+              minWidth: '20px',
+              textAlign: 'center'
+            }}>
+              {pendingAdminCount}
+            </span>
+          )}
         </Link>
 
         <Link
