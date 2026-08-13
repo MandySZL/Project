@@ -14,6 +14,28 @@ export default function MentorLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [checked, setChecked] = useState(false);
+  const [pendingSubCount, setPendingSubCount] = useState(0);
+
+  useEffect(() => {
+    const fetchPending = async () => {
+      if (!currentUser?.id || currentUser.role !== 'MENTOR') return;
+      try {
+        const res = await fetch(`/api/requests?substituteId=${currentUser.id}&status=PENDING_SUBSTITUTE`);
+        if (res.ok) {
+          const data = await res.json();
+          setPendingSubCount(data.length);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    
+    if (currentUser?.role === 'MENTOR') {
+      fetchPending();
+      const intervalId = setInterval(fetchPending, 5000);
+      return () => clearInterval(intervalId);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     if (!currentUser) {
@@ -103,7 +125,7 @@ export default function MentorLayout({
           href="/mentor/substitute" 
           className="btn" 
           style={{ 
-            justifyContent: 'flex-start', 
+            justifyContent: 'space-between', 
             background: pathname === '/mentor/substitute' ? 'rgba(239, 68, 68, 0.1)' : 'transparent', 
             color: pathname === '/mentor/substitute' ? 'var(--accent-primary)' : 'var(--text-secondary)', 
             border: 'none',
@@ -114,7 +136,21 @@ export default function MentorLayout({
             textDecoration: 'none'
           }}
         >
-          Substitute Requests
+          <span>Substitute Requests</span>
+          {pendingSubCount > 0 && (
+            <span style={{
+              background: 'var(--danger)',
+              color: '#fff',
+              fontSize: '0.75rem',
+              fontWeight: 'bold',
+              padding: '2px 6px',
+              borderRadius: '10px',
+              minWidth: '20px',
+              textAlign: 'center'
+            }}>
+              {pendingSubCount}
+            </span>
+          )}
         </Link>
 
         <div style={{ flex: 1 }}></div>
