@@ -77,7 +77,7 @@ export default function SignupPage() {
               className="input-field"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g., mandy@chmbaka.com"
+              placeholder="e.g., mandy@chumbaka.com"
               required
             />
           </div>

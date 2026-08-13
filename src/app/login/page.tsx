@@ -59,7 +59,7 @@ export default function UnifiedLogin() {
               className="input-field"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g., alice@chmbaka.com"
+              placeholder="e.g., mandy@chumbaka.com"
               required
             />
           </div>
