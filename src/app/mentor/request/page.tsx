@@ -81,7 +81,7 @@ export default function RequestLeavePage() {
   if (!currentUser) return null;
 
   const remainingDays = currentUser.totalLeaveDays - currentUser.usedLeaveDays;
-  const otherMentors = users.filter(u => u.role === 'MENTOR' && u.id !== currentUser.id);
+  const otherMentors = users.filter(u => u.id !== currentUser.id);
 
   const safeClasses = Array.isArray(classes) ? classes : [];
   const selectedClass = safeClasses.find(c => c.id === selectedClassId);
