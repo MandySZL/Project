@@ -20,7 +20,6 @@ model User {
   // Relations for Mentor
   requestsAsMentor     LeaveRequest[] @relation("MentorRequests")
   requestsAsSubstitute LeaveRequest[] @relation("SubstituteRequests")
-  assignedClasses      ClassSession[] @relation("ClassMentors")
 }
 
 model ClassSession {
@@ -28,9 +27,6 @@ model ClassSession {
   time          DateTime
   leaveLimit    Int      @default(1)
   currentLeaves Int      @default(0) // Can also be calculated, but denormalized for simplicity
-
-  requests      LeaveRequest[]
-  assignedMentors User[] @relation("ClassMentors")
 }
 
 model LeaveRequest {
@@ -43,8 +39,8 @@ model LeaveRequest {
   substituteId String
   substitute   User     @relation("SubstituteRequests", fields: [substituteId], references: [id])
   
-  classId      String
-  classSession ClassSession @relation(fields: [classId], references: [id])
+  requestDate  DateTime
+  sessionText  String
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

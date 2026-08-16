@@ -11,11 +11,6 @@ export async function GET() {
         time: {
           gt: new Date()
         }
-      },
-      include: {
-        assignedMentors: {
-          select: { id: true, name: true }
-        }
       }
     });
     return NextResponse.json(classes);

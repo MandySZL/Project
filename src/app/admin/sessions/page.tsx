@@ -13,10 +13,6 @@ export default function AdminSessionsPage() {
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(1);
-  const [editingRosterId, setEditingRosterId] = useState<string | null>(null);
-  const [selectedMentors, setSelectedMentors] = useState<string[]>([]);
-  
-  const allMentors = users.filter(u => u.role === 'MENTOR');
 
   const fetchClasses = () => {
     fetch('/api/classes')
@@ -67,37 +63,7 @@ export default function AdminSessionsPage() {
     }
   };
 
-  const handleEditRoster = (id: string, currentMentors: any[]) => {
-    setEditingRosterId(id);
-    setSelectedMentors(currentMentors.map(m => m.id));
-  };
-
-  const toggleMentor = (mentorId: string) => {
-    setSelectedMentors(prev => 
-      prev.includes(mentorId) ? prev.filter(id => id !== mentorId) : [...prev, mentorId]
-    );
-  };
-
-  const handleSaveRoster = async (id: string) => {
-    try {
-      const res = await fetch(`/api/classes/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assignedMentorIds: selectedMentors })
-      });
-      
-      if (!res.ok) {
-        alert('Failed to update assigned mentors');
-        return;
-      }
-      
-      setEditingRosterId(null);
-      fetchClasses();
-    } catch (e) {
-      console.error(e);
-      alert('Failed to update assigned mentors');
-    }
-  };
+  // Removed handleEditRoster and handleSaveRoster
 
   if (!currentUser) return null;
 
@@ -117,7 +83,6 @@ export default function AdminSessionsPage() {
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                 <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Class Date & Time</th>
-                <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Scheduled Mentors</th>
                 <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Current Leaves Approved</th>
                 <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Leave Limit</th>
                 <th style={{ padding: '12px 8px', color: 'var(--text-secondary)', textAlign: 'right' }}>Actions</th>
@@ -128,28 +93,6 @@ export default function AdminSessionsPage() {
                 <tr key={c.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td style={{ padding: '12px 8px', fontWeight: 500 }}>
                     {new Date(c.time).toLocaleString()}
-                  </td>
-                  <td style={{ padding: '12px 8px' }}>
-                    {editingRosterId === c.id ? (
-                      <div className="flex flex-col gap-2 p-2 border rounded" style={{ borderColor: 'var(--border-color)', maxHeight: '150px', overflowY: 'auto' }}>
-                        {allMentors.map(m => (
-                          <label key={m.id} className="flex items-center gap-2 text-sm cursor-pointer">
-                            <input 
-                              type="checkbox" 
-                              checked={selectedMentors.includes(m.id)}
-                              onChange={() => toggleMentor(m.id)}
-                            />
-                            {m.name}
-                          </label>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-sm">
-                        {c.assignedMentors?.length > 0 
-                          ? c.assignedMentors.map((m: any) => m.name).join(', ') 
-                          : <span style={{ color: 'var(--text-secondary)' }}>None</span>}
-                      </div>
-                    )}
                   </td>
                   <td style={{ padding: '12px 8px' }}>
                     {c.currentLeaves}
@@ -186,32 +129,7 @@ export default function AdminSessionsPage() {
                           Cancel
                         </button>
                       </div>
-                    ) : editingRosterId === c.id ? (
-                      <div className="flex gap-2" style={{ justifyContent: 'flex-end' }}>
-                        <button 
-                          className="btn btn-success" 
-                          style={{ padding: '6px 12px', fontSize: '0.85rem' }}
-                          onClick={() => handleSaveRoster(c.id)}
-                        >
-                          Save Mentors
-                        </button>
-                        <button 
-                          className="btn"
-                          style={{ padding: '6px 12px', fontSize: '0.85rem', background: 'transparent', border: '1px solid var(--border-color)' }}
-                          onClick={() => setEditingRosterId(null)}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
                       <div className="flex gap-2 justify-end">
-                        <button 
-                          className="btn"
-                          style={{ padding: '6px 12px', fontSize: '0.85rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
-                          onClick={() => handleEditRoster(c.id, c.assignedMentors || [])}
-                        >
-                          Edit Mentors
-                        </button>
                         <button 
                           className="btn"
                           style={{ padding: '6px 12px', fontSize: '0.85rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}

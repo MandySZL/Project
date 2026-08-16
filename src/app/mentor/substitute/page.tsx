@@ -64,7 +64,7 @@ export default function SubstituteRequestsPage() {
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                     <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Requesting Mentor</th>
-                    <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Class Date</th>
+                    <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Date & Session</th>
                     <th style={{ padding: '12px 8px', color: 'var(--text-secondary)', textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
@@ -75,7 +75,8 @@ export default function SubstituteRequestsPage() {
                         <div className="font-medium">{req.mentor.name}</div>
                       </td>
                       <td style={{ padding: '12px 8px' }}>
-                        {new Date(req.classSession.time).toLocaleString()}
+                        <div style={{ fontWeight: 600 }}>{new Date(req.requestDate).toLocaleDateString()}</div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{req.sessionText}</div>
                       </td>
                       <td style={{ padding: '12px 8px', textAlign: 'right' }}>
                         <div className="flex gap-2" style={{ justifyContent: 'flex-end' }}>

@@ -73,7 +73,7 @@ export default function MentorDashboard() {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Class Date</th>
+                  <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Date & Session</th>
                   <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Substitute</th>
                   <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Status</th>
                   <th style={{ padding: '12px 8px', color: 'var(--text-secondary)', textAlign: 'right' }}>Actions</th>
@@ -83,7 +83,8 @@ export default function MentorDashboard() {
                 {myRequests.map(req => (
                   <tr key={req.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                     <td style={{ padding: '12px 8px' }}>
-                      {new Date(req.classSession.time).toLocaleString()}
+                      <div style={{ fontWeight: 600 }}>{new Date(req.requestDate).toLocaleDateString()}</div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{req.sessionText}</div>
                     </td>
                     <td style={{ padding: '12px 8px' }}>
                       {req.substitute.name}

@@ -8,10 +8,12 @@ export default function RequestLeavePage() {
   const { currentUser, users } = useUser();
 
   const [myRequests, setMyRequests] = useState<any[]>([]);
+  const [activeRequests, setActiveRequests] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
 
-  const [selectedClassId, setSelectedClassId] = useState('');
+  const [sessionText, setSessionText] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
+  const [step, setStep] = useState<1 | 2>(1);
   const [selectedSubstituteId, setSelectedSubstituteId] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -23,6 +25,9 @@ export default function RequestLeavePage() {
     try {
       const reqRes = await fetch(`/api/requests?mentorId=${currentUser.id}`);
       setMyRequests(await reqRes.json());
+
+      const activeRes = await fetch('/api/requests?status=PENDING_SUBSTITUTE,PENDING_ADMIN,APPROVED');
+      setActiveRequests(await activeRes.json());
 
       const classRes = await fetch('/api/classes');
       setClasses(await classRes.json());
@@ -43,8 +48,8 @@ export default function RequestLeavePage() {
 
   const handleRequestLeave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedClassId || !selectedSubstituteId) {
-      setError('Please select both a class and a substitute.');
+    if (!sessionText || !selectedSubstituteId) {
+      setError('Please type a session and select a substitute.');
       return;
     }
 
@@ -57,7 +62,8 @@ export default function RequestLeavePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           mentorId: currentUser?.id,
-          classId: selectedClassId,
+          requestDate: selectedDate,
+          sessionText: sessionText,
           substituteId: selectedSubstituteId,
         })
       });
@@ -66,8 +72,9 @@ export default function RequestLeavePage() {
       if (!res.ok) {
         setError(data.error || 'Failed to submit request');
       } else {
-        setSelectedClassId('');
+        setSessionText('');
         setSelectedSubstituteId('');
+        setStep(1);
         fetchData(); 
         alert('Request submitted successfully!');
       }
@@ -84,18 +91,32 @@ export default function RequestLeavePage() {
   const otherMentors = users.filter(u => u.id !== currentUser.id);
 
   const safeClasses = Array.isArray(classes) ? classes : [];
-  const selectedClass = safeClasses.find(c => c.id === selectedClassId);
-  const availableSubstitutes = otherMentors.filter(m =>
-    !selectedClass?.assignedMentors?.some((am: any) => am.id === m.id)
-  );
+  const availableSubstitutes = otherMentors;
 
-  const filteredClasses = safeClasses.filter(c => {
-    if (!selectedDate) return false;
+  const dateSlots: Record<string, number> = {};
+  
+  // First sum up the limits from all classes
+  safeClasses.forEach(c => {
     const dateObj = new Date(c.time);
     const y = dateObj.getFullYear();
     const m = String(dateObj.getMonth() + 1).padStart(2, '0');
     const d = String(dateObj.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}` === selectedDate;
+    const dateStr = `${y}-${m}-${d}`;
+    if (!dateSlots[dateStr]) dateSlots[dateStr] = 0;
+    dateSlots[dateStr] += c.leaveLimit;
+  });
+
+  // Then subtract active requests for each date
+  activeRequests.forEach(req => {
+    if (!req.requestDate) return;
+    const dateObj = new Date(req.requestDate);
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const d = String(dateObj.getDate()).padStart(2, '0');
+    const dateStr = `${y}-${m}-${d}`;
+    if (dateSlots[dateStr]) {
+      dateSlots[dateStr] -= 1;
+    }
   });
 
   return (
@@ -110,96 +131,44 @@ export default function RequestLeavePage() {
         )}
 
         <form onSubmit={handleRequestLeave} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Select Date</label>
-            <Calendar
-              selectedDate={selectedDate}
-              onSelectDate={(date) => {
-                setSelectedDate(date);
-                setSelectedClassId('');
-              }}
-              classDates={safeClasses
-                .filter(c => {
-                  const slotsLeft = c.leaveLimit - c.currentLeaves;
-                  const hasActiveRequest = myRequests.some(req =>
-                    req.classId === c.id &&
-                    ['PENDING_SUBSTITUTE', 'PENDING_ADMIN', 'APPROVED'].includes(req.status)
-                  );
-                  return slotsLeft > 0 && !hasActiveRequest;
-                })
-                .map(c => {
-                  const dateObj = new Date(c.time);
-                  const y = dateObj.getFullYear();
-                  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-                  const d = String(dateObj.getDate()).padStart(2, '0');
-                  return `${y}-${m}-${d}`;
-                })}
-            />
-          </div>
-
-          <div className="flex flex-col gap-2 mt-2" style={{ minHeight: '120px' }}>
-            <label className="text-sm font-medium">Select Session</label>
-            {!selectedDate ? (
-              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                Please select a date from the calendar first.
-              </div>
-            ) : filteredClasses.length === 0 ? (
-              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                No classes scheduled for this date.
-              </div>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
-                  {filteredClasses.map(c => {
-                    const slotsLeft = c.leaveLimit - c.currentLeaves;
-                    const hasActiveRequest = myRequests.some(req =>
-                      req.classId === c.id &&
-                      ['PENDING_SUBSTITUTE', 'PENDING_ADMIN', 'APPROVED'].includes(req.status)
-                    );
-
-                    const isFull = slotsLeft <= 0;
-                    const isDisabled = isFull || hasActiveRequest;
-
-                    const timeStr = new Date(c.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    const isSelected = selectedClassId === c.id;
-
-                    return (
-                      <button
-                        key={c.id}
-                        type="button"
-                        disabled={isDisabled}
-                        onClick={() => setSelectedClassId(c.id)}
-                        style={{
-                          padding: '16px',
-                          borderRadius: '12px',
-                          border: isSelected ? '2px solid var(--accent-primary)' : '1px solid rgba(255,255,255,0.2)',
-                          background: isSelected ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255,255,255,0.05)',
-                          textAlign: 'left',
-                          cursor: isDisabled ? 'not-allowed' : 'pointer',
-                          opacity: isDisabled ? 0.5 : 1,
-                          transition: 'all 0.2s',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '8px',
-                          color: isSelected ? '#fff' : 'inherit'
-                        }}
-                      >
-                        <div style={{ fontSize: '1.25rem', fontWeight: 600 }}>{timeStr}</div>
-                        <span style={{
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          background: isDisabled ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                          color: isDisabled ? '#fca5a5' : '#6ee7b7',
-                          alignSelf: 'flex-start'
-                        }}>
-                          {hasActiveRequest ? 'Already Requested' : isFull ? 'No Slots' : `${slotsLeft} Slot(s) Left`}
-                        </span>
-                      </button>
-                    );
-                  })}
+          {step === 1 ? (
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">Select Date</label>
+              <Calendar
+                selectedDate={selectedDate}
+                onSelectDate={(date) => {
+                  setSelectedDate(date);
+                  setSessionText('');
+                  setStep(2);
+                }}
+                dateSlots={dateSlots}
+              />
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-4 mb-2">
+                <button 
+                  type="button" 
+                  onClick={() => setStep(1)} 
+                  className="btn btn-outline" 
+                  style={{ padding: '4px 12px', fontSize: '0.9rem' }}
+                >
+                  &larr; Back
+                </button>
+                <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>
+                  Selected Date: {selectedDate}
                 </div>
-              )}
+              </div>
+
+              <div className="flex flex-col gap-2 mt-2" style={{ minHeight: '120px' }}>
+                <label className="text-sm font-medium">Type Session (e.g. 10:00 AM)</label>
+                <input 
+                  type="text"
+                  className="input-field"
+                  placeholder="Which session needs a substitute?"
+                  value={sessionText}
+                  onChange={(e) => setSessionText(e.target.value)}
+                />
           </div>
 
           <div className="flex flex-col gap-2">
@@ -208,10 +177,10 @@ export default function RequestLeavePage() {
               className="input-field"
               value={selectedSubstituteId}
               onChange={(e) => setSelectedSubstituteId(e.target.value)}
-              disabled={!selectedClassId}
+              disabled={!sessionText}
             >
               <option value="">
-                {!selectedClassId ? '-- Please select a session first --' : '-- Choose a substitute --'}
+                {!sessionText ? '-- Please type a session first --' : '-- Choose a substitute --'}
               </option>
               {availableSubstitutes.map(m => (
                 <option key={m.id} value={m.id}>
@@ -221,17 +190,19 @@ export default function RequestLeavePage() {
             </select>
           </div>
 
-          <button
-            type="submit"
-            className="btn btn-primary mt-2"
-            disabled={submitting || remainingDays <= 0}
-          >
-            {submitting ? 'Submitting...' : 'Submit Request'}
-          </button>
-          {remainingDays <= 0 && (
-            <div className="text-sm text-center" style={{ color: 'var(--danger)' }}>
-              You have used all your leave days.
-            </div>
+              <button
+                type="submit"
+                className="btn btn-primary mt-2"
+                disabled={submitting || remainingDays <= 0}
+              >
+                {submitting ? 'Submitting...' : 'Submit Request'}
+              </button>
+              {remainingDays <= 0 && (
+                <div className="text-sm text-center" style={{ color: 'var(--danger)' }}>
+                  You have used all your leave days.
+                </div>
+              )}
+            </>
           )}
         </form>
       </div>

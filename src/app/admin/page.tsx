@@ -104,7 +104,7 @@ export default function AdminLeaveApprovalsPage() {
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                 <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Mentor</th>
-                <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Class Date</th>
+                <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Date & Session</th>
                 <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Substitute</th>
                 {activeTab === 'HISTORY' && (
                   <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Status</th>
@@ -119,7 +119,8 @@ export default function AdminLeaveApprovalsPage() {
                     {req.mentor.name}
                   </td>
                   <td style={{ padding: '12px 8px' }}>
-                    {new Date(req.classSession.time).toLocaleString()}
+                    <div style={{ fontWeight: 600 }}>{new Date(req.requestDate).toLocaleDateString()}</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{req.sessionText}</div>
                   </td>
                   <td style={{ padding: '12px 8px' }}>
                     {req.substitute.name}

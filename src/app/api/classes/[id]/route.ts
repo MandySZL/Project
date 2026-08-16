@@ -29,16 +29,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const updateData: any = {};
     if (leaveLimit !== undefined) updateData.leaveLimit = leaveLimit;
     
-    if (data.assignedMentorIds !== undefined) {
-      updateData.assignedMentors = {
-        set: data.assignedMentorIds.map((id: string) => ({ id }))
-      };
-    }
+    // Removed assignedMentors update logic
 
     const updated = await prisma.classSession.update({
       where: { id },
-      data: updateData,
-      include: { assignedMentors: { select: { id: true, name: true } } }
+      data: updateData
     });
 
     return NextResponse.json(updated);

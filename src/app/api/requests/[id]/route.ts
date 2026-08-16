@@ -9,7 +9,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     
     const leaveRequest = await prisma.leaveRequest.findUnique({
       where: { id },
-      include: { classSession: true, mentor: true }
+      include: { mentor: true }
     });
 
     if (!leaveRequest) {
@@ -29,10 +29,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         prisma.user.update({
           where: { id: leaveRequest.mentorId },
           data: { usedLeaveDays: { increment: 1 } }
-        }),
-        prisma.classSession.update({
-          where: { id: leaveRequest.classId },
-          data: { currentLeaves: { increment: 1 } }
         }),
         prisma.leaveRequest.update({
           where: { id },
@@ -75,10 +71,6 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
         prisma.user.update({
           where: { id: leaveRequest.mentorId },
           data: { usedLeaveDays: { decrement: 1 } }
-        }),
-        prisma.classSession.update({
-          where: { id: leaveRequest.classId },
-          data: { currentLeaves: { decrement: 1 } }
         }),
         prisma.leaveRequest.delete({
           where: { id }

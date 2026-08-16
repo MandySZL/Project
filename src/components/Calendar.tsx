@@ -5,10 +5,10 @@ import React, { useState } from 'react';
 interface CalendarProps {
   selectedDate: string;
   onSelectDate: (date: string) => void;
-  classDates: string[]; // Array of 'YYYY-MM-DD' that have classes available
+  dateSlots: Record<string, number>; // Maps 'YYYY-MM-DD' -> number of slots
 }
 
-export default function Calendar({ selectedDate, onSelectDate, classDates }: CalendarProps) {
+export default function Calendar({ selectedDate, onSelectDate, dateSlots }: CalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(() => {
     if (selectedDate) return new Date(selectedDate);
     return new Date();
@@ -78,7 +78,7 @@ export default function Calendar({ selectedDate, onSelectDate, classDates }: Cal
 
           const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const isSelected = dateStr === selectedDate;
-          const hasClass = classDates.includes(dateStr);
+          const slots = dateSlots[dateStr] || 0;
           const isToday = dateStr === new Date().toISOString().split('T')[0];
 
           return (
@@ -109,12 +109,17 @@ export default function Calendar({ selectedDate, onSelectDate, classDates }: Cal
               }}
             >
               <span>{day}</span>
-              <div style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                background: hasClass ? 'var(--accent-primary)' : 'transparent'
-              }} />
+              <div style={{ height: '14px' }}>
+                {slots > 0 && (
+                  <span style={{ 
+                    fontSize: '0.7rem', 
+                    color: 'var(--accent-primary)', 
+                    fontWeight: 700 
+                  }}>
+                    {slots}
+                  </span>
+                )}
+              </div>
             </button>
           );
         })}
