@@ -12,7 +12,7 @@ export default function SubstituteRequestsPage() {
     if (!currentUser?.id) return;
     setLoading(true);
     try {
-      const subRes = await fetch(`/api/requests?substituteId=${currentUser.id}&status=PENDING_SUBSTITUTE,PENDING_CANCEL_SUBSTITUTE`);
+      const subRes = await fetch(`/api/requests?substituteId=${currentUser.id}&status=PENDING_SUBSTITUTE`);
       setSubstituteRequests(await subRes.json());
     } catch (e) {
       console.error(e);
@@ -29,7 +29,7 @@ export default function SubstituteRequestsPage() {
     return () => clearInterval(intervalId);
   }, [currentUser]);
 
-  const handleSubstituteAction = async (id: string, action: 'ACCEPT_SUB' | 'DECLINE_SUB' | 'ACCEPT_CANCEL_SUB' | 'DECLINE_CANCEL_SUB') => {
+  const handleSubstituteAction = async (id: string, action: 'ACCEPT_SUB' | 'DECLINE_SUB') => {
     try {
       await fetch(`/api/requests/${id}`, {
         method: 'PATCH',
@@ -57,26 +57,20 @@ export default function SubstituteRequestsPage() {
         ) : substituteRequests.length > 0 ? (
           <>
             <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-              Other mentors have requested you to substitute for them, or requested to cancel an existing arrangement.
+              Other mentors have requested you to substitute for them.
             </p>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Type</th>
                     <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Requesting Mentor</th>
                     <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Date & Session</th>
                     <th style={{ padding: '12px 8px', color: 'var(--text-secondary)', textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {substituteRequests.map(req => {
-                    const isCancel = req.status === 'PENDING_CANCEL_SUBSTITUTE';
-                    return (
-                    <tr key={req.id} style={{ borderBottom: '1px solid var(--border-color)', background: isCancel ? 'rgba(245, 158, 11, 0.05)' : 'transparent' }}>
-                      <td style={{ padding: '12px 8px' }}>
-                        {isCancel ? <span className="badge badge-pending">CANCELLATION</span> : <span className="badge badge-approved">NEW LEAVE</span>}
-                      </td>
+                  {substituteRequests.map(req => (
+                    <tr key={req.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                       <td style={{ padding: '12px 8px' }}>
                         <div className="font-medium">{req.mentor.name}</div>
                       </td>
@@ -86,13 +80,12 @@ export default function SubstituteRequestsPage() {
                       </td>
                       <td style={{ padding: '12px 8px', textAlign: 'right' }}>
                         <div className="flex gap-2" style={{ justifyContent: 'flex-end' }}>
-                          <button className="btn btn-success" style={{ padding: '6px 16px' }} onClick={() => handleSubstituteAction(req.id, isCancel ? 'ACCEPT_CANCEL_SUB' : 'ACCEPT_SUB')}>Accept</button>
-                          <button className="btn btn-danger" style={{ padding: '6px 16px' }} onClick={() => handleSubstituteAction(req.id, isCancel ? 'DECLINE_CANCEL_SUB' : 'DECLINE_SUB')}>Decline</button>
+                          <button className="btn btn-success" style={{ padding: '6px 16px' }} onClick={() => handleSubstituteAction(req.id, 'ACCEPT_SUB')}>Accept</button>
+                          <button className="btn btn-danger" style={{ padding: '6px 16px' }} onClick={() => handleSubstituteAction(req.id, 'DECLINE_SUB')}>Decline</button>
                         </div>
                       </td>
                     </tr>
-                    );
-                  })}
+                  ))}
                 </tbody>
               </table>
             </div>

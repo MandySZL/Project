@@ -15,7 +15,7 @@ export default function AdminLeaveApprovalsPage() {
   if (!currentUser) return null;
 
   const fetchRequests = () => {
-    const statusQuery = activeTab === 'PENDING' ? 'PENDING_ADMIN,PENDING_CANCEL_ADMIN' : 'APPROVED,REJECTED,CANCELLED';
+    const statusQuery = activeTab === 'PENDING' ? 'PENDING_ADMIN' : 'APPROVED,REJECTED';
     fetch(`/api/requests?status=${statusQuery}`)
       .then(res => res.json())
       .then(data => {
@@ -38,7 +38,7 @@ export default function AdminLeaveApprovalsPage() {
     }
   }, [currentUser, activeTab]);
 
-  const handleAction = async (id: string, action: 'APPROVE_ADMIN' | 'REJECT_ADMIN' | 'APPROVE_CANCEL_ADMIN' | 'REJECT_CANCEL_ADMIN') => {
+  const handleAction = async (id: string, action: 'APPROVE_ADMIN' | 'REJECT_ADMIN') => {
     try {
       await fetch(`/api/requests/${id}`, {
         method: 'PATCH',
@@ -103,7 +103,6 @@ export default function AdminLeaveApprovalsPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Type</th>
                 <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Mentor</th>
                 <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Date & Session</th>
                 <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Substitute</th>
@@ -114,13 +113,8 @@ export default function AdminLeaveApprovalsPage() {
               </tr>
             </thead>
             <tbody>
-              {requests.map(req => {
-                const isCancel = req.status === 'PENDING_CANCEL_ADMIN';
-                return (
-                <tr key={req.id} style={{ borderBottom: '1px solid var(--border-color)', background: isCancel ? 'rgba(245, 158, 11, 0.05)' : 'transparent' }}>
-                  <td style={{ padding: '12px 8px' }}>
-                    {isCancel || req.status === 'CANCELLED' ? <span className="badge badge-pending">CANCELLATION</span> : <span className="badge badge-approved">NEW LEAVE</span>}
-                  </td>
+              {requests.map(req => (
+                <tr key={req.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td style={{ padding: '12px 8px', fontWeight: 500 }}>
                     {req.mentor.name}
                   </td>
@@ -151,14 +145,14 @@ export default function AdminLeaveApprovalsPage() {
                         <button 
                           className="btn btn-success" 
                           style={{ padding: '6px 12px', fontSize: '0.85rem' }}
-                          onClick={() => handleAction(req.id, isCancel ? 'APPROVE_CANCEL_ADMIN' : 'APPROVE_ADMIN')}
+                          onClick={() => handleAction(req.id, 'APPROVE_ADMIN')}
                         >
                           Approve
                         </button>
                         <button 
                           className="btn btn-danger"
                           style={{ padding: '6px 12px', fontSize: '0.85rem' }}
-                          onClick={() => handleAction(req.id, isCancel ? 'REJECT_CANCEL_ADMIN' : 'REJECT_ADMIN')}
+                          onClick={() => handleAction(req.id, 'REJECT_ADMIN')}
                         >
                           Reject
                         </button>
@@ -175,8 +169,7 @@ export default function AdminLeaveApprovalsPage() {
                     </td>
                   )}
                 </tr>
-                );
-              })}
+              ))}
             </tbody>
           </table>
         </div>
