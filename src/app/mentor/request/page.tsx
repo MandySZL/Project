@@ -171,14 +171,32 @@ export default function RequestLeavePage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Session (e.g. 10:00 AM)</label>
-                <input 
-                  type="text"
+                <label className="text-sm font-medium">Select Session</label>
+                <select
                   className="input-field"
-                  placeholder="Which session needs a substitute?"
                   value={sessionText}
                   onChange={(e) => setSessionText(e.target.value)}
-                />
+                >
+                  <option value="">-- Choose a session --</option>
+                  {safeClasses
+                    .filter(c => {
+                      if (!c.time) return false;
+                      const dateObj = new Date(c.time);
+                      const y = dateObj.getFullYear();
+                      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                      const d = String(dateObj.getDate()).padStart(2, '0');
+                      return `${y}-${m}-${d}` === selectedDate;
+                    })
+                    .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+                    .map(c => {
+                      const timeString = new Date(c.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                      return (
+                        <option key={c.id} value={timeString}>
+                          {timeString}
+                        </option>
+                      );
+                    })}
+                </select>
           </div>
 
           <div className="flex flex-col gap-2">
