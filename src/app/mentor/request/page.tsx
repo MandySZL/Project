@@ -130,7 +130,7 @@ export default function RequestLeavePage() {
           </div>
         )}
 
-        <form onSubmit={handleRequestLeave} className="flex flex-col gap-4">
+        <form onSubmit={handleRequestLeave} className="flex flex-col gap-6">
           {step === 1 ? (
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium">Select Date</label>
@@ -146,22 +146,32 @@ export default function RequestLeavePage() {
             </div>
           ) : (
             <>
-              <div className="flex items-center gap-4 mb-2">
+              <div className="flex items-center gap-6 pb-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
                 <button 
                   type="button" 
                   onClick={() => setStep(1)} 
-                  className="btn btn-outline" 
-                  style={{ padding: '4px 12px', fontSize: '0.9rem' }}
+                  className="btn"
+                  style={{ 
+                    padding: '6px 12px',
+                    fontSize: '0.9rem',
+                    backgroundColor: 'var(--bg-secondary)',
+                    color: 'var(--text-secondary)',
+                    border: '1px solid var(--border-color)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
                 >
-                  &larr; Back
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                  Back
                 </button>
-                <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>
+                <div style={{ fontSize: '1.15rem', fontWeight: 600, color: 'var(--text-primary)' }}>
                   Selected Date: {selectedDate}
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 mt-2" style={{ minHeight: '120px' }}>
-                <label className="text-sm font-medium">Type Session (e.g. 10:00 AM)</label>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">Session (e.g. 10:00 AM)</label>
                 <input 
                   type="text"
                   className="input-field"
