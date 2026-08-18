@@ -104,6 +104,24 @@ export default function MentorLayout({
         </Link>
 
         <Link 
+          href="/mentor/calendar" 
+          className="btn" 
+          style={{ 
+            justifyContent: 'flex-start', 
+            background: pathname === '/mentor/calendar' ? 'rgba(239, 68, 68, 0.1)' : 'transparent', 
+            color: pathname === '/mentor/calendar' ? 'var(--accent-primary)' : 'var(--text-secondary)', 
+            border: 'none',
+            boxShadow: 'none',
+            padding: '12px 16px',
+            fontWeight: pathname === '/mentor/calendar' ? 600 : 500,
+            borderRadius: '8px',
+            textDecoration: 'none'
+          }}
+        >
+          Calendar
+        </Link>
+
+        <Link 
           href="/mentor/request" 
           className="btn" 
           style={{ 

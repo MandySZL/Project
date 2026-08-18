@@ -153,6 +153,24 @@ export default function AdminLayout({
           Manage Sessions
         </Link>
 
+        <Link
+          href="/admin/calendar"
+          className="btn"
+          style={{
+            justifyContent: 'flex-start',
+            background: pathname === '/admin/calendar' ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
+            color: pathname === '/admin/calendar' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+            border: 'none',
+            boxShadow: 'none',
+            padding: '12px 16px',
+            fontWeight: pathname === '/admin/calendar' ? 600 : 500,
+            borderRadius: '8px',
+            textDecoration: 'none'
+          }}
+        >
+          Calendar
+        </Link>
+
         <div style={{ flex: 1 }}></div>
 
         {/* Logout */}
