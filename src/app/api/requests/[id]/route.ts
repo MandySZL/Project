@@ -38,6 +38,37 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ success: true, status: newStatus });
     } else if (action === 'REJECT_ADMIN' && leaveRequest.status === 'PENDING_ADMIN') {
       newStatus = 'REJECTED';
+    } else if (action === 'REQUEST_CANCEL') {
+      newStatus = 'PENDING_CANCEL_SUBSTITUTE';
+      await prisma.leaveRequest.update({
+        where: { id },
+        data: { status: newStatus, wasApproved: leaveRequest.status === 'APPROVED' } as any
+      });
+      return NextResponse.json({ success: true, status: newStatus });
+    } else if (action === 'ACCEPT_CANCEL_SUB' && leaveRequest.status === 'PENDING_CANCEL_SUBSTITUTE') {
+      newStatus = 'PENDING_CANCEL_ADMIN';
+    } else if (action === 'DECLINE_CANCEL_SUB' && leaveRequest.status === 'PENDING_CANCEL_SUBSTITUTE') {
+      // @ts-ignore
+      newStatus = leaveRequest.wasApproved ? 'APPROVED' : 'PENDING_SUBSTITUTE';
+    } else if (action === 'APPROVE_CANCEL_ADMIN' && leaveRequest.status === 'PENDING_CANCEL_ADMIN') {
+      newStatus = 'CANCELLED';
+      // @ts-ignore
+      if (leaveRequest.wasApproved) {
+        await prisma.$transaction([
+          prisma.user.update({
+            where: { id: leaveRequest.mentorId },
+            data: { usedLeaveDays: { decrement: 1 } }
+          }),
+          prisma.leaveRequest.update({
+            where: { id },
+            data: { status: newStatus }
+          })
+        ]);
+        return NextResponse.json({ success: true, status: newStatus });
+      }
+    } else if (action === 'REJECT_CANCEL_ADMIN' && leaveRequest.status === 'PENDING_CANCEL_ADMIN') {
+      // @ts-ignore
+      newStatus = leaveRequest.wasApproved ? 'APPROVED' : 'PENDING_SUBSTITUTE';
     } else {
       return NextResponse.json({ error: 'Invalid action or state' }, { status: 400 });
     }

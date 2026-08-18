@@ -29,19 +29,23 @@ export default function MentorDashboard() {
     return () => clearInterval(intervalId);
   }, [currentUser]);
 
-  const handleDeleteRequest = async (id: string) => {
-    if (!window.confirm('Are you sure you want to cancel this leave request?')) return;
+  const handleCancelRequest = async (id: string) => {
+    if (!window.confirm('Are you sure you want to request cancellation for this leave?')) return;
     try {
-      const res = await fetch(`/api/requests/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/requests/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'REQUEST_CANCEL' })
+      });
       if (!res.ok) {
         const data = await res.json();
-        alert('Failed to cancel: ' + (data.error || 'Unknown error'));
+        alert('Failed to request cancellation: ' + (data.error || 'Unknown error'));
         return;
       }
       fetchData(); 
     } catch (e) {
       console.error(e);
-      alert('Failed to cancel request (Network error)');
+      alert('Failed to request cancellation (Network error)');
     }
   };
 
@@ -91,23 +95,28 @@ export default function MentorDashboard() {
                     </td>
                     <td style={{ padding: '12px 8px' }}>
                       <span className={`badge ${req.status === 'APPROVED' ? 'badge-approved' :
-                          req.status === 'REJECTED' ? 'badge-rejected' :
+                          req.status.includes('REJECTED') ? 'badge-rejected' :
+                          req.status === 'CANCELLED' ? 'badge-rejected' :
                             'badge-pending'
                         }`}>
-                        {req.status.replace('_', ' ')}
+                        {req.status.replace(/_/g, ' ')}
                       </span>
                     </td>
                     <td style={{ padding: '12px 8px', textAlign: 'right' }}>
-                      {req.status === 'APPROVED' ? (
+                      {req.status.startsWith('PENDING_CANCEL') ? (
+                        <span style={{ color: 'var(--warning)', fontSize: '0.875rem', fontWeight: 600 }}>
+                          Cancellation Pending
+                        </span>
+                      ) : req.status === 'CANCELLED' || req.status === 'REJECTED' ? (
                         <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                          Cannot cancel
+                          -
                         </span>
                       ) : (
                         <button
-                          onClick={() => handleDeleteRequest(req.id)}
+                          onClick={() => handleCancelRequest(req.id)}
                           style={{ color: 'var(--danger)', fontSize: '0.875rem', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
                         >
-                          Cancel
+                          Request Cancel
                         </button>
                       )}
                     </td>
