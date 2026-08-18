@@ -98,18 +98,12 @@ export default function MentorDashboard() {
                       </span>
                     </td>
                     <td style={{ padding: '12px 8px', textAlign: 'right' }}>
-                      {req.status === 'APPROVED' ? (
-                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                          Cannot cancel
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => handleDeleteRequest(req.id)}
-                          style={{ color: 'var(--danger)', fontSize: '0.875rem', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-                        >
-                          Cancel
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleDeleteRequest(req.id)}
+                        style={{ color: 'var(--danger)', fontSize: '0.875rem', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                      >
+                        Cancel
+                      </button>
                     </td>
                   </tr>
                 ))}

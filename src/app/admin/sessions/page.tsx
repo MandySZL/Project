@@ -129,6 +129,7 @@ export default function AdminSessionsPage() {
                           Cancel
                         </button>
                       </div>
+                    ) : (
                       <div className="flex gap-2 justify-end">
                         <button 
                           className="btn"
