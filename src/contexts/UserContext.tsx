@@ -30,7 +30,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     try {
       const res = await fetch('/api/users');
       const data = await res.json();
-      setUsers(data);
+      setUsers(Array.isArray(data) ? data : []);
       
       // Attempt to load from sessionStorage
       const savedUserId = sessionStorage.getItem('mentorLeave_userId');
