@@ -5,11 +5,14 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Start of today
+
     const classes = await prisma.classSession.findMany({
       orderBy: { time: 'asc' },
       where: {
         time: {
-          gt: new Date()
+          gte: today
         }
       }
     });

@@ -9,7 +9,7 @@ export default function MentorCalendarPage() {
       <div style={{ marginBottom: '16px' }}>
         <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>Calendar Dashboard</h2>
         <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>
-          View daily classes, check available leave slots, and see who is substituting.
+          View daily classes, and see who is substituting.
         </p>
       </div>
       <DashboardCalendar />

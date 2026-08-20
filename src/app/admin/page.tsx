@@ -39,11 +39,12 @@ export default function AdminLeaveApprovalsPage() {
   }, [currentUser, activeTab]);
 
   const handleAction = async (id: string, action: 'APPROVE_ADMIN' | 'REJECT_ADMIN') => {
+    if (!currentUser) return;
     try {
       await fetch(`/api/requests/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action })
+        body: JSON.stringify({ action, adminId: currentUser.id })
       });
       fetchRequests();
     } catch (e) {
@@ -141,14 +142,18 @@ export default function AdminLeaveApprovalsPage() {
                   )}
                   {activeTab === 'PENDING' ? (
                     <td style={{ padding: '12px 8px', textAlign: 'right' }}>
-                      <div className="flex gap-2" style={{ justifyContent: 'flex-end' }}>
-                        <button 
-                          className="btn btn-success" 
-                          style={{ padding: '6px 12px', fontSize: '0.85rem' }}
-                          onClick={() => handleAction(req.id, 'APPROVE_ADMIN')}
-                        >
-                          Approve
-                        </button>
+                      <div className="flex gap-2" style={{ justifyContent: 'flex-end', alignItems: 'center' }}>
+                        {req.firstAdminId === currentUser.id ? (
+                          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Approved (1/2)</span>
+                        ) : (
+                          <button 
+                            className="btn btn-success" 
+                            style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+                            onClick={() => handleAction(req.id, 'APPROVE_ADMIN')}
+                          >
+                            Approve
+                          </button>
+                        )}
                         <button 
                           className="btn btn-danger"
                           style={{ padding: '6px 12px', fontSize: '0.85rem' }}

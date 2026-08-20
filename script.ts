@@ -5,9 +5,9 @@ async function main() {
   const users = await prisma.user.findMany();
   console.log(users);
   
-  console.log('Requests:');
-  const requests = await prisma.leaveRequest.findMany({ include: { substitute: true } });
-  console.log(requests);
+  console.log('Class Sessions:');
+  const classes = await prisma.classSession.findMany();
+  console.log(classes);
 }
 
 main().finally(() => process.exit(0));
