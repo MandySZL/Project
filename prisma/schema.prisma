@@ -25,7 +25,7 @@ model User {
 model ClassSession {
   id            String   @id @default(cuid())
   time          DateTime
-  leaveLimit    Int      @default(1)
+  leaveLimit    Int      @default(0)
   currentLeaves Int      @default(0) // Can also be calculated, but denormalized for simplicity
 }
 
