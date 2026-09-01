@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useUser } from '../../../contexts/UserContext';
 import { useRouter } from 'next/navigation';
+import { Check, X, Edit2, ShieldAlert } from 'lucide-react';
 
 export default function AdminMentorsPage() {
   const { currentUser, users, refreshUsers } = useUser();
@@ -10,6 +11,8 @@ export default function AdminMentorsPage() {
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(0);
+  
+  const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
     // Auto-refresh data every 5 seconds
@@ -22,6 +25,11 @@ export default function AdminMentorsPage() {
 
   if (!currentUser) return null;
 
+  const showStatus = (text: string, type: 'success' | 'error') => {
+    setStatusMessage({ text, type });
+    setTimeout(() => setStatusMessage(null), 3000);
+  };
+
   const handleEdit = (id: string, currentDays: number) => {
     setEditingId(id);
     setEditValue(currentDays);
@@ -29,92 +37,131 @@ export default function AdminMentorsPage() {
 
   const handleSave = async (id: string) => {
     try {
-      await fetch(`/api/users/${id}`, {
+      const res = await fetch(`/api/users/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ totalLeaveDays: editValue })
       });
+      
+      if (!res.ok) throw new Error('Failed to update');
+      
       setEditingId(null);
       await refreshUsers();
+      showStatus('Leave days updated successfully', 'success');
     } catch (e) {
       console.error(e);
-      alert('Failed to update leave days');
+      showStatus('Failed to update leave days', 'error');
     }
   };
-
-  // Auth check is handled by layout
 
   const mentors = users.filter(u => u.role === 'MENTOR');
 
   return (
     <div className="glass-panel">
-      <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '24px' }}>Manage Mentors</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Manage Mentors</h2>
+        {statusMessage && (
+          <div className={`status-message status-${statusMessage.type}`}>
+            {statusMessage.type === 'success' ? <Check size={18} /> : <ShieldAlert size={18} />}
+            {statusMessage.text}
+          </div>
+        )}
+      </div>
       
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+      <div className="table-container">
+        <table className="custom-table">
           <thead>
-            <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-              <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Name</th>
-              <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Used Leave Days</th>
-              <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Total Leave Days</th>
-              <th style={{ padding: '12px 8px', color: 'var(--text-secondary)', textAlign: 'right' }}>Actions</th>
+            <tr>
+              <th>Name</th>
+              <th>Leave Utilization</th>
+              <th>Total Limit</th>
+              <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {mentors.map(mentor => (
-              <tr key={mentor.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <td style={{ padding: '12px 8px', fontWeight: 500 }}>
-                  {mentor.name}
-                </td>
-                <td style={{ padding: '12px 8px' }}>
-                  {mentor.usedLeaveDays}
-                </td>
-                <td style={{ padding: '12px 8px' }}>
-                  {editingId === mentor.id ? (
-                    <input 
-                      type="number" 
-                      className="input-field"
-                      style={{ padding: '4px 8px', width: '80px' }}
-                      value={editValue}
-                      onChange={(e) => setEditValue(parseInt(e.target.value))}
-                      min={mentor.usedLeaveDays}
-                    />
-                  ) : (
-                    mentor.totalLeaveDays
-                  )}
-                </td>
-                <td style={{ padding: '12px 8px', textAlign: 'right' }}>
-                  {editingId === mentor.id ? (
-                    <div className="flex gap-2" style={{ justifyContent: 'flex-end' }}>
-                      <button 
-                        className="btn btn-primary" 
-                        style={{ padding: '6px 12px', fontSize: '0.85rem' }}
-                        onClick={() => handleSave(mentor.id)}
-                      >
-                        Save
-                      </button>
-                      <button 
-                        className="btn"
-                        style={{ padding: '6px 12px', fontSize: '0.85rem', background: 'transparent', border: '1px solid var(--border-color)' }}
-                        onClick={() => setEditingId(null)}
-                      >
-                        Cancel
-                      </button>
+            {mentors.map(mentor => {
+              const usagePercent = mentor.totalLeaveDays > 0 
+                ? Math.min((mentor.usedLeaveDays / mentor.totalLeaveDays) * 100, 100) 
+                : 0;
+              
+              let progressColor = 'var(--success)';
+              if (usagePercent > 60) progressColor = 'var(--warning)';
+              if (usagePercent > 85) progressColor = 'var(--danger)';
+
+              return (
+                <tr key={mentor.id}>
+                  <td style={{ fontWeight: 500 }}>
+                    {mentor.name}
+                  </td>
+                  <td>
+                    <div className="flex justify-between items-center text-sm mb-1">
+                      <span>{mentor.usedLeaveDays} used</span>
+                      <span style={{ color: 'var(--text-secondary)' }}>{mentor.totalLeaveDays} total</span>
                     </div>
-                  ) : (
-                    <button 
-                      className="btn"
-                      style={{ padding: '6px 12px', fontSize: '0.85rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
-                      onClick={() => handleEdit(mentor.id, mentor.totalLeaveDays)}
-                    >
-                      Edit
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
+                    <div className="progress-container">
+                      <div 
+                        className="progress-bar" 
+                        style={{ width: `${usagePercent}%`, backgroundColor: progressColor }}
+                      />
+                    </div>
+                  </td>
+                  <td>
+                    {editingId === mentor.id ? (
+                      <input 
+                        type="number" 
+                        className="input-field"
+                        style={{ padding: '8px 12px', width: '100px' }}
+                        value={editValue}
+                        onChange={(e) => setEditValue(parseInt(e.target.value) || 0)}
+                        min={mentor.usedLeaveDays}
+                      />
+                    ) : (
+                      <span className="font-medium">{mentor.totalLeaveDays} Days</span>
+                    )}
+                  </td>
+                  <td style={{ textAlign: 'right' }}>
+                    {editingId === mentor.id ? (
+                      <div className="flex gap-2 justify-end">
+                        <button 
+                          className="btn-icon" 
+                          style={{ color: 'var(--success)' }}
+                          onClick={() => handleSave(mentor.id)}
+                          title="Save"
+                        >
+                          <Check size={20} />
+                        </button>
+                        <button 
+                          className="btn-icon"
+                          style={{ color: 'var(--text-secondary)' }}
+                          onClick={() => setEditingId(null)}
+                          title="Cancel"
+                        >
+                          <X size={20} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2 justify-end">
+                        <button 
+                          className="btn-icon"
+                          onClick={() => handleEdit(mentor.id, mentor.totalLeaveDays)}
+                          title="Edit Limit"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
+        
+        {mentors.length === 0 && (
+          <div className="text-center py-8" style={{ color: 'var(--text-secondary)' }}>
+            No mentors found in the system.
+          </div>
+        )}
       </div>
     </div>
   );

@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { useUser } from '../../../contexts/UserContext';
 import { useRouter } from 'next/navigation';
+import { Check, X, Edit2, ShieldAlert, Plus, Calendar, Clock, Users } from 'lucide-react';
 
 export default function AdminSessionsPage() {
-  const { currentUser, users } = useUser();
+  const { currentUser } = useUser();
   const router = useRouter();
   
   const [classes, setClasses] = useState<any[]>([]);
@@ -19,6 +20,8 @@ export default function AdminSessionsPage() {
   const [newTime, setNewTime] = useState('');
   const [newLimit, setNewLimit] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
+  
+  const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
   const fetchClasses = () => {
     fetch('/api/classes')
@@ -47,6 +50,11 @@ export default function AdminSessionsPage() {
     }
   }, [currentUser]);
 
+  const showStatus = (text: string, type: 'success' | 'error') => {
+    setStatusMessage({ text, type });
+    setTimeout(() => setStatusMessage(null), 3000);
+  };
+
   const handleEdit = (id: string, currentLimit: number) => {
     setEditingId(id);
     setEditValue(currentLimit);
@@ -61,16 +69,15 @@ export default function AdminSessionsPage() {
       });
       
       if (!res.ok) {
-        const data = await res.json();
-        alert(data.error || 'Failed to update leave limit');
-        return;
+        throw new Error('Failed to update leave limit');
       }
       
       setEditingId(null);
       fetchClasses();
+      showStatus('Session updated successfully', 'success');
     } catch (e) {
       console.error(e);
-      alert('Failed to update leave limit');
+      showStatus('Failed to update session', 'error');
     }
   };
 
@@ -92,33 +99,45 @@ export default function AdminSessionsPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        alert(data.error || 'Failed to create session');
+        throw new Error('Failed to create session');
       } else {
         setNewDate('');
         setNewTime('');
         setNewLimit(0);
         fetchClasses();
+        showStatus('New session created', 'success');
       }
     } catch (error) {
       console.error(error);
-      alert('An unexpected error occurred.');
+      showStatus('An error occurred while creating', 'error');
     } finally {
       setIsCreating(false);
     }
   };
 
-  // Removed handleEditRoster and handleSaveRoster
-
   if (!currentUser) return null;
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="glass-panel">
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '24px' }}>Add New Session</h2>
-        <form onSubmit={handleCreateSession} className="flex gap-4 items-end flex-wrap">
+      {statusMessage && (
+        <div className={`status-message status-${statusMessage.type} mb-2`}>
+          {statusMessage.type === 'success' ? <Check size={18} /> : <ShieldAlert size={18} />}
+          {statusMessage.text}
+        </div>
+      )}
+      
+      <div className="glass-panel" style={{ padding: '32px' }}>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Plus size={20} className="text-accent" style={{ color: 'var(--accent-primary)' }}/>
+          Add New Session
+        </h2>
+        
+        <form onSubmit={handleCreateSession} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', alignItems: 'end' }}>
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Date</label>
+            <label className="text-sm font-medium flex items-center gap-2">
+              <Calendar size={16} style={{ color: 'var(--text-secondary)' }}/>
+              Date
+            </label>
             <input 
               type="date" 
               className="input-field" 
@@ -128,7 +147,10 @@ export default function AdminSessionsPage() {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Time</label>
+            <label className="text-sm font-medium flex items-center gap-2">
+              <Clock size={16} style={{ color: 'var(--text-secondary)' }}/>
+              Time
+            </label>
             <input 
               type="time" 
               className="input-field" 
@@ -138,7 +160,10 @@ export default function AdminSessionsPage() {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Leave Limit</label>
+            <label className="text-sm font-medium flex items-center gap-2">
+              <Users size={16} style={{ color: 'var(--text-secondary)' }}/>
+              Leave Limit
+            </label>
             <input 
               type="number" 
               className="input-field" 
@@ -146,16 +171,15 @@ export default function AdminSessionsPage() {
               onChange={(e) => setNewLimit(Number(e.target.value) || 0)}
               min="0"
               required
-              style={{ width: '100px' }}
             />
           </div>
           <button 
             type="submit" 
             className="btn btn-primary h-full"
             disabled={isCreating || !newDate || !newTime}
-            style={{ padding: '10px 20px', height: '42px' }}
+            style={{ padding: '12px 24px', height: '48px', fontSize: '1rem' }}
           >
-            {isCreating ? 'Adding...' : 'Add Session'}
+            {isCreating ? 'Adding...' : 'Create Session'}
           </button>
         </form>
       </div>
@@ -164,83 +188,96 @@ export default function AdminSessionsPage() {
         <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '24px' }}>Manage Sessions</h2>
         
         {loading ? (
-          <div className="text-sm">Loading...</div>
+          <div className="text-sm" style={{ padding: '24px 0' }}>Loading sessions...</div>
         ) : !Array.isArray(classes) || classes.length === 0 ? (
-          <div className="text-sm text-center" style={{ padding: '24px 0' }}>
-            {!Array.isArray(classes) ? `Error loading sessions: ${JSON.stringify(classes)}` : 'No upcoming sessions found.'}
+          <div className="text-sm text-center" style={{ padding: '48px 0', color: 'var(--text-secondary)' }}>
+            <Calendar size={48} style={{ opacity: 0.2, margin: '0 auto 16px auto' }} />
+            {!Array.isArray(classes) ? `Error loading sessions` : 'No upcoming sessions found.'}
           </div>
         ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Class Date & Time</th>
-                <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Current Leaves Approved</th>
-                <th style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>Leave Limit</th>
-                <th style={{ padding: '12px 8px', color: 'var(--text-secondary)', textAlign: 'right' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {classes.map(c => (
-                <tr key={c.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <td style={{ padding: '12px 8px', fontWeight: 500 }}>
-                    {new Date(c.time).toLocaleString()}
-                  </td>
-                  <td style={{ padding: '12px 8px' }}>
-                    {c.currentLeaves}
-                  </td>
-                  <td style={{ padding: '12px 8px' }}>
-                    {editingId === c.id ? (
-                      <input 
-                        type="number" 
-                        className="input-field"
-                        style={{ padding: '4px 8px', width: '80px' }}
-                        value={editValue}
-                        onChange={(e) => setEditValue(Number(e.target.value) || 0)}
-                        min={c.currentLeaves}
-                      />
-                    ) : (
-                      c.leaveLimit
-                    )}
-                  </td>
-                  <td style={{ padding: '12px 8px', textAlign: 'right' }}>
-                    {editingId === c.id ? (
-                      <div className="flex gap-2" style={{ justifyContent: 'flex-end' }}>
-                        <button 
-                          type="button"
-                          className="btn btn-primary" 
-                          style={{ padding: '6px 12px', fontSize: '0.85rem', cursor: 'pointer' }}
-                          onClick={() => handleSave(c.id)}
-                        >
-                          Save Limit
-                        </button>
-                        <button 
-                          className="btn"
-                          style={{ padding: '6px 12px', fontSize: '0.85rem', background: 'transparent', border: '1px solid var(--border-color)' }}
-                          onClick={() => setEditingId(null)}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex gap-2 justify-end">
-                        <button 
-                          className="btn"
-                          style={{ padding: '6px 12px', fontSize: '0.85rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
-                          onClick={() => handleEdit(c.id, c.leaveLimit)}
-                        >
-                          Edit Limit
-                        </button>
-                      </div>
-                    )}
-                  </td>
+          <div className="table-container">
+            <table className="custom-table">
+              <thead>
+                <tr>
+                  <th>Class Date & Time</th>
+                  <th>Current Leaves Approved</th>
+                  <th>Leave Limit</th>
+                  <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {classes.map(c => {
+                  const dateObj = new Date(c.time);
+                  const formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                  const formattedTime = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                  
+                  return (
+                    <tr key={c.id}>
+                      <td style={{ fontWeight: 500 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <span style={{ fontSize: '0.95rem' }}>{formattedDate}</span>
+                          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{formattedTime}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="badge badge-pending" style={{ background: c.currentLeaves > 0 ? 'rgba(245, 158, 11, 0.15)' : 'var(--bg-secondary)', color: c.currentLeaves > 0 ? 'var(--warning)' : 'var(--text-secondary)' }}>
+                          {c.currentLeaves} Approved
+                        </span>
+                      </td>
+                      <td>
+                        {editingId === c.id ? (
+                          <input 
+                            type="number" 
+                            className="input-field"
+                            style={{ padding: '8px 12px', width: '100px' }}
+                            value={editValue}
+                            onChange={(e) => setEditValue(Number(e.target.value) || 0)}
+                            min={c.currentLeaves}
+                          />
+                        ) : (
+                          <span className="font-medium">{c.leaveLimit} {c.leaveLimit === 1 ? 'Slot' : 'Slots'}</span>
+                        )}
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        {editingId === c.id ? (
+                          <div className="flex gap-2 justify-end">
+                            <button 
+                              className="btn-icon" 
+                              style={{ color: 'var(--success)' }}
+                              onClick={() => handleSave(c.id)}
+                              title="Save Limit"
+                            >
+                              <Check size={20} />
+                            </button>
+                            <button 
+                              className="btn-icon"
+                              style={{ color: 'var(--text-secondary)' }}
+                              onClick={() => setEditingId(null)}
+                              title="Cancel"
+                            >
+                              <X size={20} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex gap-2 justify-end">
+                            <button 
+                              className="btn-icon"
+                              onClick={() => handleEdit(c.id, c.leaveLimit)}
+                              title="Edit Limit"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
-  </div>
   );
 }
