@@ -15,6 +15,7 @@ export default function AdminLayout({
   const pathname = usePathname();
   const [checked, setChecked] = useState(false);
   const [pendingAdminCount, setPendingAdminCount] = useState(0);
+  const [pendingSubCount, setPendingSubCount] = useState(0);
 
   useEffect(() => {
     const fetchPending = async () => {
@@ -24,6 +25,12 @@ export default function AdminLayout({
         if (res.ok) {
           const data = await res.json();
           setPendingAdminCount(data.length);
+        }
+        
+        const subRes = await fetch(`/api/requests?substituteId=${currentUser.id}&status=PENDING_SUBSTITUTE&_t=${Date.now()}`);
+        if (subRes.ok) {
+          const subData = await subRes.json();
+          setPendingSubCount(subData.length);
         }
       } catch (e) {
         console.error(e);
@@ -113,6 +120,38 @@ export default function AdminLayout({
               textAlign: 'center'
             }}>
               {pendingAdminCount}
+            </span>
+          )}
+        </Link>
+
+        <Link
+          href="/admin/substitute"
+          className="btn"
+          style={{
+            justifyContent: 'space-between',
+            background: pathname === '/admin/substitute' ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
+            color: pathname === '/admin/substitute' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+            border: 'none',
+            boxShadow: 'none',
+            padding: '12px 16px',
+            fontWeight: pathname === '/admin/substitute' ? 600 : 500,
+            borderRadius: '8px',
+            textDecoration: 'none'
+          }}
+        >
+          <span>Substitute Requests</span>
+          {pendingSubCount > 0 && (
+            <span style={{
+              background: 'var(--danger)',
+              color: '#fff',
+              fontSize: '0.75rem',
+              fontWeight: 'bold',
+              padding: '2px 6px',
+              borderRadius: '10px',
+              minWidth: '20px',
+              textAlign: 'center'
+            }}>
+              {pendingSubCount}
             </span>
           )}
         </Link>
