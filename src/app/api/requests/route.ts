@@ -123,6 +123,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'The selected substitute already has a leave request on this date.' }, { status: 400 });
     }
 
+    // Prevent selecting a substitute who is already scheduled to substitute on the same day
+    const substituteAlreadySubstituting = await prisma.leaveRequest.findFirst({
+      where: {
+        substituteId: substituteId,
+        requestDate: parsedDate,
+        status: {
+          in: ['PENDING_SUBSTITUTE', 'PENDING_ADMIN', 'APPROVED']
+        }
+      }
+    });
+
+    if (substituteAlreadySubstituting) {
+      return NextResponse.json({ error: 'The selected substitute is already scheduled to substitute for someone else on this date.' }, { status: 400 });
+    }
+
     // Create request
     const leaveRequest = await prisma.leaveRequest.create({
       data: {

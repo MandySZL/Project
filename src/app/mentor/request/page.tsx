@@ -93,15 +93,16 @@ export default function RequestLeavePage() {
   const safeClasses = Array.isArray(classes) ? classes : [];
   
   const availableSubstitutes = otherMentors.filter(mentor => {
-    const hasLeave = activeRequests.some(req => {
+    const isUnavailable = activeRequests.some(req => {
       if (!req.requestDate) return false;
       const dateObj = new Date(req.requestDate);
       const y = dateObj.getFullYear();
       const mStr = String(dateObj.getMonth() + 1).padStart(2, '0');
       const dStr = String(dateObj.getDate()).padStart(2, '0');
-      return req.mentorId === mentor.id && `${y}-${mStr}-${dStr}` === selectedDate;
+      const reqDateStr = `${y}-${mStr}-${dStr}`;
+      return reqDateStr === selectedDate && (req.mentorId === mentor.id || req.substituteId === mentor.id);
     });
-    return !hasLeave;
+    return !isUnavailable;
   });
 
   const isSubstitutingOnDate = activeRequests.some(req => {
