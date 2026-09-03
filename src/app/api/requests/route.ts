@@ -48,18 +48,10 @@ export async function POST(request: Request) {
     }
 
     const parsedDate = new Date(requestDate);
-    // Find all classes on this date to get the total daily limit
-    const startOfDay = new Date(parsedDate);
-    startOfDay.setUTCHours(0, 0, 0, 0);
-    const endOfDay = new Date(parsedDate);
-    endOfDay.setUTCHours(23, 59, 59, 999);
-
+    // Find all recurring timeslots for the requested day of week to get the total daily limit
     const classesOnDate = await prisma.classSession.findMany({
       where: {
-        time: {
-          gte: startOfDay,
-          lt: endOfDay
-        }
+        dayOfWeek: parsedDate.getUTCDay()
       }
     });
 

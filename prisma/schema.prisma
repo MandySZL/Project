@@ -24,9 +24,11 @@ model User {
 
 model ClassSession {
   id            String   @id @default(cuid())
-  time          DateTime
+  dayOfWeek     Int      // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  timeString    String   // e.g. "10:00" (start time)
+  endTimeString String   @default("00:00") // e.g. "12:00" (end time)
+  venue         String   @default("TBD")
   leaveLimit    Int      @default(0)
-  currentLeaves Int      @default(0) // Can also be calculated, but denormalized for simplicity
 }
 
 model LeaveRequest {

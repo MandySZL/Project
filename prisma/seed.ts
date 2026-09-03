@@ -55,29 +55,28 @@ async function main() {
     },
   });
 
-  // Create Classes
-  const now = new Date();
+  // Create Classes (Recurring Timeslots)
   const class1 = await prisma.classSession.create({
     data: {
-      time: new Date(now.getTime() + 24 * 60 * 60 * 1000), // Tomorrow
+      dayOfWeek: 1, // Monday
+      timeString: '10:00',
       leaveLimit: 1,
-      currentLeaves: 0,
     },
   });
 
   const class2 = await prisma.classSession.create({
     data: {
-      time: new Date(now.getTime() + 48 * 60 * 60 * 1000), // Day after tomorrow
+      dayOfWeek: 3, // Wednesday
+      timeString: '14:00',
       leaveLimit: 2,
-      currentLeaves: 0,
     },
   });
 
   const class3 = await prisma.classSession.create({
     data: {
-      time: new Date(now.getTime() + 72 * 60 * 60 * 1000), // 3 days from now
+      dayOfWeek: 5, // Friday
+      timeString: '16:30',
       leaveLimit: 1,
-      currentLeaves: 0,
     },
   });
 

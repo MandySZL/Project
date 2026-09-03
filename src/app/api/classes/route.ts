@@ -5,16 +5,11 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Start of today
-
     const classes = await prisma.classSession.findMany({
-      orderBy: { time: 'asc' },
-      where: {
-        time: {
-          gte: today
-        }
-      }
+      orderBy: [
+        { dayOfWeek: 'asc' },
+        { timeString: 'asc' }
+      ]
     });
     return NextResponse.json(classes);
   } catch (error) {
@@ -26,17 +21,19 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { time, leaveLimit } = data;
+    const { dayOfWeek, timeString, endTimeString, venue, leaveLimit } = data;
 
-    if (!time) {
-      return NextResponse.json({ error: 'Time is required' }, { status: 400 });
+    if (dayOfWeek === undefined || !timeString || !endTimeString) {
+      return NextResponse.json({ error: 'dayOfWeek, timeString and endTimeString are required' }, { status: 400 });
     }
 
     const newClass = await prisma.classSession.create({
       data: {
-        time: new Date(time),
-        leaveLimit: leaveLimit !== undefined ? leaveLimit : 0,
-        currentLeaves: 0,
+        dayOfWeek: Number(dayOfWeek),
+        timeString,
+        endTimeString,
+        venue: venue || 'TBD',
+        leaveLimit: leaveLimit !== undefined ? leaveLimit : 2,
       }
     });
 

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useUser } from '../../../contexts/UserContext';
 import { useRouter } from 'next/navigation';
-import { Check, X, Edit2, ShieldAlert, Plus, Calendar, Clock, Users } from 'lucide-react';
+import { Plus, Clock, Users, Edit2, Check, X, ShieldAlert, Trash2, Calendar } from 'lucide-react';
 
 export default function AdminSessionsPage() {
   const { currentUser } = useUser();
@@ -16,9 +16,11 @@ export default function AdminSessionsPage() {
   const [editValue, setEditValue] = useState<number>(1);
 
   // New session state
-  const [newDate, setNewDate] = useState('');
+  const [newDayOfWeek, setNewDayOfWeek] = useState(1);
   const [newTime, setNewTime] = useState('');
-  const [newLimit, setNewLimit] = useState(0);
+  const [newEndTime, setNewEndTime] = useState('');
+  const [newVenue, setNewVenue] = useState('');
+  const [newLimit, setNewLimit] = useState(2);
   const [isCreating, setIsCreating] = useState(false);
   
   const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
@@ -48,7 +50,7 @@ export default function AdminSessionsPage() {
       
       return () => clearInterval(intervalId);
     }
-  }, [currentUser]);
+  }, [currentUser?.id]);
 
   const showStatus = (text: string, type: 'success' | 'error') => {
     setStatusMessage({ text, type });
@@ -81,19 +83,41 @@ export default function AdminSessionsPage() {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this session?')) return;
+    
+    try {
+      const res = await fetch(`/api/classes/${id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!res.ok) {
+        throw new Error('Failed to delete session');
+      }
+      
+      fetchClasses();
+      showStatus('Session deleted successfully', 'success');
+    } catch (e) {
+      console.error(e);
+      showStatus('Failed to delete session', 'error');
+    }
+  };
+
   const handleCreateSession = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newDate || !newTime) return;
+    if (!newTime) return;
 
     try {
       setIsCreating(true);
-      const dateTimeString = `${newDate}T${newTime}:00`;
       
       const res = await fetch('/api/classes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          time: dateTimeString,
+          dayOfWeek: newDayOfWeek,
+          timeString: newTime,
+          endTimeString: newEndTime,
+          venue: newVenue,
           leaveLimit: newLimit
         })
       });
@@ -101,9 +125,11 @@ export default function AdminSessionsPage() {
       if (!res.ok) {
         throw new Error('Failed to create session');
       } else {
-        setNewDate('');
+        setNewDayOfWeek(1);
         setNewTime('');
-        setNewLimit(0);
+        setNewEndTime('');
+        setNewVenue('');
+        setNewLimit(2);
         fetchClasses();
         showStatus('New session created', 'success');
       }
@@ -132,24 +158,31 @@ export default function AdminSessionsPage() {
           Add New Session
         </h2>
         
-        <form onSubmit={handleCreateSession} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', alignItems: 'end' }}>
-          <div className="flex flex-col gap-2">
+        <form onSubmit={handleCreateSession} className="flex flex-wrap gap-4 items-end">
+          <div className="flex flex-col gap-2 flex-1" style={{ minWidth: '130px' }}>
             <label className="text-sm font-medium flex items-center gap-2">
               <Calendar size={16} style={{ color: 'var(--text-secondary)' }}/>
-              Date
+              Day of Week
             </label>
-            <input 
-              type="date" 
+            <select 
               className="input-field" 
-              value={newDate} 
-              onChange={(e) => setNewDate(e.target.value)}
+              value={newDayOfWeek} 
+              onChange={(e) => setNewDayOfWeek(Number(e.target.value))}
               required
-            />
+            >
+              <option value={1}>Monday</option>
+              <option value={2}>Tuesday</option>
+              <option value={3}>Wednesday</option>
+              <option value={4}>Thursday</option>
+              <option value={5}>Friday</option>
+              <option value={6}>Saturday</option>
+              <option value={0}>Sunday</option>
+            </select>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 flex-1" style={{ minWidth: '120px' }}>
             <label className="text-sm font-medium flex items-center gap-2">
               <Clock size={16} style={{ color: 'var(--text-secondary)' }}/>
-              Time
+              Start Time
             </label>
             <input 
               type="time" 
@@ -159,7 +192,34 @@ export default function AdminSessionsPage() {
               required
             />
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 flex-1" style={{ minWidth: '120px' }}>
+            <label className="text-sm font-medium flex items-center gap-2">
+              <Clock size={16} style={{ color: 'var(--text-secondary)' }}/>
+              End Time
+            </label>
+            <input 
+              type="time" 
+              className="input-field" 
+              value={newEndTime} 
+              onChange={(e) => setNewEndTime(e.target.value)}
+              required
+            />
+          </div>
+          <div className="flex flex-col gap-2 flex-1" style={{ minWidth: '150px' }}>
+            <label className="text-sm font-medium flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              Venue
+            </label>
+            <input 
+              type="text" 
+              className="input-field" 
+              placeholder="e.g. Room A"
+              value={newVenue} 
+              onChange={(e) => setNewVenue(e.target.value)}
+              required
+            />
+          </div>
+          <div className="flex flex-col gap-2 flex-1" style={{ minWidth: '100px' }}>
             <label className="text-sm font-medium flex items-center gap-2">
               <Users size={16} style={{ color: 'var(--text-secondary)' }}/>
               Leave Limit
@@ -173,14 +233,17 @@ export default function AdminSessionsPage() {
               required
             />
           </div>
-          <button 
-            type="submit" 
-            className="btn btn-primary h-full"
-            disabled={isCreating || !newDate || !newTime}
-            style={{ padding: '12px 24px', height: '48px', fontSize: '1rem' }}
-          >
-            {isCreating ? 'Adding...' : 'Create Session'}
-          </button>
+          <div className="flex flex-col gap-2 flex-none">
+            <label className="text-sm font-medium invisible hidden md:block">Submit</label>
+            <button 
+              type="submit" 
+              className="btn btn-primary"
+              disabled={isCreating || !newTime || !newEndTime}
+              style={{ padding: '0 24px', height: '42px', fontSize: '1rem', whiteSpace: 'nowrap' }}
+            >
+              {isCreating ? 'Adding...' : 'Create Session'}
+            </button>
+          </div>
         </form>
       </div>
 
@@ -199,30 +262,31 @@ export default function AdminSessionsPage() {
             <table className="custom-table">
               <thead>
                 <tr>
-                  <th>Class Date & Time</th>
-                  <th>Current Leaves Approved</th>
+                  <th>Day</th>
+                  <th>Venue</th>
+                  <th>Time</th>
                   <th>Leave Limit</th>
                   <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {classes.map(c => {
-                  const dateObj = new Date(c.time);
-                  const formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                  const formattedTime = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                  const dayName = days[c.dayOfWeek];
+                  const startTimeStr = c.timeString;
+                  const endTimeStr = c.endTimeString || '00:00';
+                  const singleLineText = `${dayName} ${c.venue || 'TBD'} ${startTimeStr}-${endTimeStr}`;
                   
                   return (
                     <tr key={c.id}>
                       <td style={{ fontWeight: 500 }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <span style={{ fontSize: '0.95rem' }}>{formattedDate}</span>
-                          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{formattedTime}</span>
-                        </div>
+                        <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>{dayName}</span>
                       </td>
                       <td>
-                        <span className="badge badge-pending" style={{ background: c.currentLeaves > 0 ? 'rgba(245, 158, 11, 0.15)' : 'var(--bg-secondary)', color: c.currentLeaves > 0 ? 'var(--warning)' : 'var(--text-secondary)' }}>
-                          {c.currentLeaves} Approved
-                        </span>
+                        <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>{c.venue || 'TBD'}</span>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>{startTimeStr}-{endTimeStr}</span>
                       </td>
                       <td>
                         {editingId === c.id ? (
@@ -232,7 +296,7 @@ export default function AdminSessionsPage() {
                             style={{ padding: '8px 12px', width: '100px' }}
                             value={editValue}
                             onChange={(e) => setEditValue(Number(e.target.value) || 0)}
-                            min={c.currentLeaves}
+                            min={0}
                           />
                         ) : (
                           <span className="font-medium">{c.leaveLimit} {c.leaveLimit === 1 ? 'Slot' : 'Slots'}</span>
@@ -266,6 +330,14 @@ export default function AdminSessionsPage() {
                               title="Edit Limit"
                             >
                               <Edit2 size={18} />
+                            </button>
+                            <button 
+                              className="btn-icon"
+                              onClick={() => handleDelete(c.id)}
+                              title="Delete Session"
+                              style={{ color: 'var(--danger)' }}
+                            >
+                              <Trash2 size={18} />
                             </button>
                           </div>
                         )}

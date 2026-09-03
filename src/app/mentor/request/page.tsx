@@ -116,16 +116,22 @@ export default function RequestLeavePage() {
 
   const dateSlots: Record<string, number> = {};
   
-  // First sum up the limits from all classes
-  safeClasses.forEach(c => {
-    const dateObj = new Date(c.time);
-    const y = dateObj.getFullYear();
-    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const d = String(dateObj.getDate()).padStart(2, '0');
-    const dateStr = `${y}-${m}-${d}`;
-    if (!dateSlots[dateStr]) dateSlots[dateStr] = 0;
-    dateSlots[dateStr] += c.leaveLimit;
-  });
+  // Generate date slots for the next 90 days based on recurring weekly timeslots
+  const today = new Date();
+  for (let i = 0; i < 90; i++) {
+    const d = new Date(today.getTime() + i * 24 * 60 * 60 * 1000);
+    const dayOfWeek = d.getDay(); // 0-6 local time
+    
+    const classesOnDay = safeClasses.filter(c => c.dayOfWeek === dayOfWeek);
+    if (classesOnDay.length > 0) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const dayStr = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${y}-${m}-${dayStr}`;
+      
+      dateSlots[dateStr] = classesOnDay.reduce((sum, c) => sum + (c.leaveLimit || 0), 0);
+    }
+  }
 
   // Then subtract active requests for each date
   activeRequests.forEach(req => {
@@ -207,19 +213,18 @@ export default function RequestLeavePage() {
                       <option value="">-- Choose a session --</option>
                       {safeClasses
                         .filter(c => {
-                          if (!c.time) return false;
-                          const dateObj = new Date(c.time);
-                          const y = dateObj.getFullYear();
-                          const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-                          const d = String(dateObj.getDate()).padStart(2, '0');
-                          return `${y}-${m}-${d}` === selectedDate;
+                          if (c.dayOfWeek === undefined) return false;
+                          const dateObj = new Date(selectedDate);
+                          return c.dayOfWeek === dateObj.getUTCDay();
                         })
-                        .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+                        .sort((a, b) => (a.timeString || '').localeCompare(b.timeString || ''))
                         .map(c => {
-                          const timeString = new Date(c.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                          const startTimeStr = c.timeString;
+                          const endTimeStr = c.endTimeString || '00:00';
+                          const displayStr = `${c.venue || 'TBD'} ${startTimeStr}-${endTimeStr}`;
                           return (
-                            <option key={c.id} value={timeString}>
-                              {timeString}
+                            <option key={c.id} value={displayStr}>
+                              {displayStr}
                             </option>
                           );
                         })}
