@@ -51,38 +51,24 @@ export default function DashboardCalendar() {
     Array.from({ length: daysInMonth }, (_, i) => i + 1)
   );
 
-  // Group classes by date
-  const classesByDate: Record<string, any[]> = {};
-  classes.forEach(c => {
-    const d = new Date(c.time);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const dateStr = `${y}-${m}-${day}`;
-    if (!classesByDate[dateStr]) classesByDate[dateStr] = [];
-    classesByDate[dateStr].push(c);
-  });
-
-  // Sort classes by time
-  Object.values(classesByDate).forEach(arr => {
-    arr.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
-  });
+  // We don't need to group classes by date since they repeat weekly based on dayOfWeek.
+  // We'll just filter them when rendering selectedClasses or determining hasClass.
 
   // Group requests by date and sessionText
   const requestsByDateSession: Record<string, any[]> = {};
   requests.forEach(req => {
-    const d = new Date(req.requestDate);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const dateStr = `${y}-${m}-${day}`;
+    // Extract YYYY-MM-DD from requestDate directly to avoid timezone shift
+    const dateStr = req.requestDate.split('T')[0];
     
     const key = `${dateStr}_${req.sessionText}`;
     if (!requestsByDateSession[key]) requestsByDateSession[key] = [];
     requestsByDateSession[key].push(req);
   });
 
-  const selectedClasses = classesByDate[selectedDate] || [];
+  const selectedClasses = classes.filter(c => {
+    // new Date("YYYY-MM-DD") parses as UTC, so getUTCDay() gets the correct weekday
+    return c.dayOfWeek === new Date(selectedDate).getUTCDay();
+  }).sort((a, b) => (a.timeString || '').localeCompare(b.timeString || ''));
 
   return (
     <div className="flex flex-col gap-6">
@@ -130,7 +116,7 @@ export default function DashboardCalendar() {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const isSelected = dateStr === selectedDate;
             const isToday = dateStr === new Date().toISOString().split('T')[0];
-            const hasClass = !!classesByDate[dateStr];
+            const hasClass = classes.some(c => c.dayOfWeek === new Date(dateStr).getUTCDay());
 
             return (
               <button
@@ -185,8 +171,10 @@ export default function DashboardCalendar() {
         ) : (
           <div className="flex flex-col gap-4">
             {selectedClasses.map(c => {
-              const timeString = new Date(c.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-              const sessionRequests = requestsByDateSession[`${selectedDate}_${timeString}`] || [];
+              const startTimeStr = c.timeString || '';
+              const endTimeStr = c.endTimeString || '00:00';
+              const displayStr = `${c.venue || 'TBD'} ${startTimeStr}-${endTimeStr}`;
+              const sessionRequests = requestsByDateSession[`${selectedDate}_${displayStr}`] || [];
               const slotsTaken = sessionRequests.length;
               const slotsLeft = c.leaveLimit - slotsTaken;
               const isFull = slotsLeft <= 0;
@@ -201,7 +189,7 @@ export default function DashboardCalendar() {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                        {timeString}
+                        {displayStr}
                       </div>
                     </div>
                   </div>
