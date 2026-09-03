@@ -9,7 +9,7 @@ export default function AdminCalendarPage() {
       <div style={{ marginBottom: '16px' }}>
         <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>Calendar Dashboard</h2>
         <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>
-          Overview of daily classes, available leave slots, and substitute assignments.
+          Overview of daily classes, and substitute assignments.
         </p>
       </div>
       <DashboardCalendar />

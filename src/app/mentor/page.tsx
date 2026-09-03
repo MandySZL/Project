@@ -10,7 +10,6 @@ export default function MentorDashboard() {
 
   const fetchData = async () => {
     if (!currentUser?.id) return;
-    setLoading(true);
     try {
       const reqRes = await fetch(`/api/requests?mentorId=${currentUser.id}`);
       setMyRequests(await reqRes.json());
@@ -22,6 +21,7 @@ export default function MentorDashboard() {
   };
 
   useEffect(() => {
+    setLoading(true);
     fetchData();
     const intervalId = setInterval(() => {
       fetchData();

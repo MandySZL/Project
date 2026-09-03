@@ -30,14 +30,25 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     try {
       const res = await fetch('/api/users');
       const data = await res.json();
-      setUsers(Array.isArray(data) ? data : []);
+      setUsers(prev => {
+        const newData = Array.isArray(data) ? data : [];
+        if (JSON.stringify(prev) === JSON.stringify(newData)) {
+          return prev;
+        }
+        return newData;
+      });
       
       // Attempt to load from sessionStorage
       const savedUserId = sessionStorage.getItem('mentorLeave_userId');
       if (savedUserId) {
         const found = data.find((u: User) => u.id === savedUserId);
         if (found) {
-          setCurrentUser(found);
+          setCurrentUser(prev => {
+            if (prev && JSON.stringify(prev) === JSON.stringify(found)) {
+              return prev;
+            }
+            return found;
+          });
         } else {
           sessionStorage.removeItem('mentorLeave_userId');
         }

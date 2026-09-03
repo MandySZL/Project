@@ -10,7 +10,6 @@ export default function AdminSubstituteRequestsPage() {
 
   const fetchData = async () => {
     if (!currentUser?.id) return;
-    setLoading(true);
     try {
       const subRes = await fetch(`/api/requests?substituteId=${currentUser.id}&status=PENDING_SUBSTITUTE`);
       setSubstituteRequests(await subRes.json());
@@ -22,6 +21,7 @@ export default function AdminSubstituteRequestsPage() {
   };
 
   useEffect(() => {
+    setLoading(true);
     fetchData();
     const intervalId = setInterval(() => {
       fetchData();

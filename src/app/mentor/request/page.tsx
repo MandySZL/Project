@@ -21,7 +21,6 @@ export default function RequestLeavePage() {
 
   const fetchData = async () => {
     if (!currentUser?.id) return;
-    setLoading(true);
     try {
       const reqRes = await fetch(`/api/requests?mentorId=${currentUser.id}`);
       setMyRequests(await reqRes.json());
@@ -39,6 +38,7 @@ export default function RequestLeavePage() {
   };
 
   useEffect(() => {
+    setLoading(true);
     fetchData();
     const intervalId = setInterval(() => {
       fetchData();
