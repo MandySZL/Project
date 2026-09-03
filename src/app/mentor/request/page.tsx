@@ -91,7 +91,27 @@ export default function RequestLeavePage() {
   const otherMentors = users.filter(u => u.id !== currentUser.id);
 
   const safeClasses = Array.isArray(classes) ? classes : [];
-  const availableSubstitutes = otherMentors;
+  
+  const availableSubstitutes = otherMentors.filter(mentor => {
+    const hasLeave = activeRequests.some(req => {
+      if (!req.requestDate) return false;
+      const dateObj = new Date(req.requestDate);
+      const y = dateObj.getFullYear();
+      const mStr = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const dStr = String(dateObj.getDate()).padStart(2, '0');
+      return req.mentorId === mentor.id && `${y}-${mStr}-${dStr}` === selectedDate;
+    });
+    return !hasLeave;
+  });
+
+  const isSubstitutingOnDate = activeRequests.some(req => {
+    if (!req.requestDate) return false;
+    const dateObj = new Date(req.requestDate);
+    const y = dateObj.getFullYear();
+    const mStr = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const dStr = String(dateObj.getDate()).padStart(2, '0');
+    return req.substituteId === currentUser.id && `${y}-${mStr}-${dStr}` === selectedDate;
+  });
 
   const dateSlots: Record<string, number> = {};
   
@@ -170,65 +190,73 @@ export default function RequestLeavePage() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Select Session</label>
-                <select
-                  className="input-field"
-                  value={sessionText}
-                  onChange={(e) => setSessionText(e.target.value)}
-                >
-                  <option value="">-- Choose a session --</option>
-                  {safeClasses
-                    .filter(c => {
-                      if (!c.time) return false;
-                      const dateObj = new Date(c.time);
-                      const y = dateObj.getFullYear();
-                      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-                      const d = String(dateObj.getDate()).padStart(2, '0');
-                      return `${y}-${m}-${d}` === selectedDate;
-                    })
-                    .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
-                    .map(c => {
-                      const timeString = new Date(c.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                      return (
-                        <option key={c.id} value={timeString}>
-                          {timeString}
-                        </option>
-                      );
-                    })}
-                </select>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Select Substitute Mentor</label>
-            <select
-              className="input-field"
-              value={selectedSubstituteId}
-              onChange={(e) => setSelectedSubstituteId(e.target.value)}
-              disabled={!sessionText}
-            >
-              <option value="">
-                {!sessionText ? '-- Please type a session first --' : '-- Choose a substitute --'}
-              </option>
-              {availableSubstitutes.map(m => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-              <button
-                type="submit"
-                className="btn btn-primary mt-2"
-                disabled={submitting || remainingDays <= 0}
-              >
-                {submitting ? 'Submitting...' : 'Submit Request'}
-              </button>
-              {remainingDays <= 0 && (
-                <div className="text-sm text-center" style={{ color: 'var(--danger)' }}>
-                  You have used all your leave days.
+              {isSubstitutingOnDate ? (
+                <div style={{ padding: '16px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '8px', marginTop: '16px' }}>
+                  You cannot request leave on this date because you are already scheduled to substitute for another mentor.
                 </div>
+              ) : (
+                <>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium">Select Session</label>
+                    <select
+                      className="input-field"
+                      value={sessionText}
+                      onChange={(e) => setSessionText(e.target.value)}
+                    >
+                      <option value="">-- Choose a session --</option>
+                      {safeClasses
+                        .filter(c => {
+                          if (!c.time) return false;
+                          const dateObj = new Date(c.time);
+                          const y = dateObj.getFullYear();
+                          const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                          const d = String(dateObj.getDate()).padStart(2, '0');
+                          return `${y}-${m}-${d}` === selectedDate;
+                        })
+                        .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+                        .map(c => {
+                          const timeString = new Date(c.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                          return (
+                            <option key={c.id} value={timeString}>
+                              {timeString}
+                            </option>
+                          );
+                        })}
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium">Select Substitute Mentor</label>
+                    <select
+                      className="input-field"
+                      value={selectedSubstituteId}
+                      onChange={(e) => setSelectedSubstituteId(e.target.value)}
+                      disabled={!sessionText}
+                    >
+                      <option value="">
+                        {!sessionText ? '-- Please type a session first --' : '-- Choose a substitute --'}
+                      </option>
+                      {availableSubstitutes.map(m => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn btn-primary mt-2"
+                    disabled={submitting || remainingDays <= 0}
+                  >
+                    {submitting ? 'Submitting...' : 'Submit Request'}
+                  </button>
+                  {remainingDays <= 0 && (
+                    <div className="text-sm text-center" style={{ color: 'var(--danger)' }}>
+                      You have used all your leave days.
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}

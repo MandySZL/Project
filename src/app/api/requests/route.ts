@@ -93,6 +93,36 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'You already have an active leave request for this session on this date' }, { status: 400 });
     }
 
+    // Prevent requesting leave if the mentor is already acting as a substitute on the same day
+    const isSubstituting = await prisma.leaveRequest.findFirst({
+      where: {
+        substituteId: mentorId,
+        requestDate: parsedDate,
+        status: {
+          in: ['PENDING_SUBSTITUTE', 'PENDING_ADMIN', 'APPROVED']
+        }
+      }
+    });
+
+    if (isSubstituting) {
+      return NextResponse.json({ error: 'You cannot request leave on a day you are already scheduled to substitute for someone else.' }, { status: 400 });
+    }
+
+    // Prevent selecting a substitute who has already requested leave on the same day
+    const substituteOnLeave = await prisma.leaveRequest.findFirst({
+      where: {
+        mentorId: substituteId,
+        requestDate: parsedDate,
+        status: {
+          in: ['PENDING_SUBSTITUTE', 'PENDING_ADMIN', 'APPROVED']
+        }
+      }
+    });
+
+    if (substituteOnLeave) {
+      return NextResponse.json({ error: 'The selected substitute already has a leave request on this date.' }, { status: 400 });
+    }
+
     // Create request
     const leaveRequest = await prisma.leaveRequest.create({
       data: {
