@@ -8,10 +8,10 @@ import { Check, X, Edit2, ShieldAlert } from 'lucide-react';
 export default function AdminMentorsPage() {
   const { currentUser, users, refreshUsers } = useUser();
   const router = useRouter();
-  
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(0);
-  
+
   const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export default function AdminMentorsPage() {
     const intervalId = setInterval(() => {
       refreshUsers();
     }, 5000);
-    
+
     return () => clearInterval(intervalId);
   }, [refreshUsers]);
 
@@ -42,9 +42,9 @@ export default function AdminMentorsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ totalLeaveDays: editValue })
       });
-      
+
       if (!res.ok) throw new Error('Failed to update');
-      
+
       setEditingId(null);
       await refreshUsers();
       showStatus('Leave days updated successfully', 'success');
@@ -67,7 +67,7 @@ export default function AdminMentorsPage() {
           </div>
         )}
       </div>
-      
+
       <div className="table-container">
         <table className="custom-table">
           <thead>
@@ -80,10 +80,10 @@ export default function AdminMentorsPage() {
           </thead>
           <tbody>
             {mentors.map(mentor => {
-              const usagePercent = mentor.totalLeaveDays > 0 
-                ? Math.min((mentor.usedLeaveDays / mentor.totalLeaveDays) * 100, 100) 
+              const usagePercent = mentor.totalLeaveDays > 0
+                ? Math.min((mentor.usedLeaveDays / mentor.totalLeaveDays) * 100, 100)
                 : 0;
-              
+
               let progressColor = 'var(--success)';
               if (usagePercent > 60) progressColor = 'var(--warning)';
               if (usagePercent > 85) progressColor = 'var(--danger)';
@@ -99,16 +99,16 @@ export default function AdminMentorsPage() {
                       <span style={{ color: 'var(--text-secondary)' }}>{mentor.totalLeaveDays} total</span>
                     </div>
                     <div className="progress-container">
-                      <div 
-                        className="progress-bar" 
+                      <div
+                        className="progress-bar"
                         style={{ width: `${usagePercent}%`, backgroundColor: progressColor }}
                       />
                     </div>
                   </td>
                   <td>
                     {editingId === mentor.id ? (
-                      <input 
-                        type="number" 
+                      <input
+                        type="number"
                         className="input-field"
                         style={{ padding: '8px 12px', width: '100px' }}
                         value={editValue}
@@ -122,15 +122,15 @@ export default function AdminMentorsPage() {
                   <td style={{ textAlign: 'right' }}>
                     {editingId === mentor.id ? (
                       <div className="flex gap-2 justify-end">
-                        <button 
-                          className="btn-icon" 
+                        <button
+                          className="btn-icon"
                           style={{ color: 'var(--success)' }}
                           onClick={() => handleSave(mentor.id)}
                           title="Save"
                         >
                           <Check size={20} />
                         </button>
-                        <button 
+                        <button
                           className="btn-icon"
                           style={{ color: 'var(--text-secondary)' }}
                           onClick={() => setEditingId(null)}
@@ -141,7 +141,7 @@ export default function AdminMentorsPage() {
                       </div>
                     ) : (
                       <div className="flex gap-2 justify-end">
-                        <button 
+                        <button
                           className="btn-icon"
                           onClick={() => handleEdit(mentor.id, mentor.totalLeaveDays)}
                           title="Edit Limit"
@@ -156,7 +156,7 @@ export default function AdminMentorsPage() {
             })}
           </tbody>
         </table>
-        
+
         {mentors.length === 0 && (
           <div className="text-center py-8" style={{ color: 'var(--text-secondary)' }}>
             No mentors found in the system.

@@ -8,10 +8,10 @@ import { Plus, Clock, Users, Edit2, Check, X, ShieldAlert, Trash2, Calendar } fr
 export default function AdminSessionsPage() {
   const { currentUser } = useUser();
   const router = useRouter();
-  
+
   const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(1);
 
@@ -22,7 +22,7 @@ export default function AdminSessionsPage() {
   const [newVenue, setNewVenue] = useState('');
   const [newLimit, setNewLimit] = useState(2);
   const [isCreating, setIsCreating] = useState(false);
-  
+
   const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
   const fetchClasses = () => {
@@ -37,7 +37,7 @@ export default function AdminSessionsPage() {
   useEffect(() => {
     if (currentUser?.role === 'ADMIN') {
       fetchClasses();
-      
+
       // Auto-refresh data every 5 seconds, but pause if editing to prevent UI jumps
       const intervalId = setInterval(() => {
         setEditingId(currentEditingId => {
@@ -47,7 +47,7 @@ export default function AdminSessionsPage() {
           return currentEditingId;
         });
       }, 5000);
-      
+
       return () => clearInterval(intervalId);
     }
   }, [currentUser?.id]);
@@ -69,11 +69,11 @@ export default function AdminSessionsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ leaveLimit: editValue })
       });
-      
+
       if (!res.ok) {
         throw new Error('Failed to update leave limit');
       }
-      
+
       setEditingId(null);
       fetchClasses();
       showStatus('Session updated successfully', 'success');
@@ -85,16 +85,16 @@ export default function AdminSessionsPage() {
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this session?')) return;
-    
+
     try {
       const res = await fetch(`/api/classes/${id}`, {
         method: 'DELETE',
       });
-      
+
       if (!res.ok) {
         throw new Error('Failed to delete session');
       }
-      
+
       fetchClasses();
       showStatus('Session deleted successfully', 'success');
     } catch (e) {
@@ -109,7 +109,7 @@ export default function AdminSessionsPage() {
 
     try {
       setIsCreating(true);
-      
+
       const res = await fetch('/api/classes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -151,22 +151,22 @@ export default function AdminSessionsPage() {
           {statusMessage.text}
         </div>
       )}
-      
+
       <div className="glass-panel" style={{ padding: '32px' }}>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Plus size={20} className="text-accent" style={{ color: 'var(--accent-primary)' }}/>
+          <Plus size={20} className="text-accent" style={{ color: 'var(--accent-primary)' }} />
           Add New Session
         </h2>
-        
+
         <form onSubmit={handleCreateSession} className="flex flex-wrap gap-4 items-end">
           <div className="flex flex-col gap-2 flex-1" style={{ minWidth: '130px' }}>
             <label className="text-sm font-medium flex items-center gap-2">
-              <Calendar size={16} style={{ color: 'var(--text-secondary)' }}/>
+              <Calendar size={16} style={{ color: 'var(--text-secondary)' }} />
               Day of Week
             </label>
-            <select 
-              className="input-field" 
-              value={newDayOfWeek} 
+            <select
+              className="input-field"
+              value={newDayOfWeek}
               onChange={(e) => setNewDayOfWeek(Number(e.target.value))}
               required
             >
@@ -181,26 +181,26 @@ export default function AdminSessionsPage() {
           </div>
           <div className="flex flex-col gap-2 flex-1" style={{ minWidth: '120px' }}>
             <label className="text-sm font-medium flex items-center gap-2">
-              <Clock size={16} style={{ color: 'var(--text-secondary)' }}/>
+              <Clock size={16} style={{ color: 'var(--text-secondary)' }} />
               Start Time
             </label>
-            <input 
-              type="time" 
-              className="input-field" 
-              value={newTime} 
+            <input
+              type="time"
+              className="input-field"
+              value={newTime}
               onChange={(e) => setNewTime(e.target.value)}
               required
             />
           </div>
           <div className="flex flex-col gap-2 flex-1" style={{ minWidth: '120px' }}>
             <label className="text-sm font-medium flex items-center gap-2">
-              <Clock size={16} style={{ color: 'var(--text-secondary)' }}/>
+              <Clock size={16} style={{ color: 'var(--text-secondary)' }} />
               End Time
             </label>
-            <input 
-              type="time" 
-              className="input-field" 
-              value={newEndTime} 
+            <input
+              type="time"
+              className="input-field"
+              value={newEndTime}
               onChange={(e) => setNewEndTime(e.target.value)}
               required
             />
@@ -210,24 +210,24 @@ export default function AdminSessionsPage() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
               Venue
             </label>
-            <input 
-              type="text" 
-              className="input-field" 
+            <input
+              type="text"
+              className="input-field"
               placeholder="e.g. Room A"
-              value={newVenue} 
+              value={newVenue}
               onChange={(e) => setNewVenue(e.target.value)}
               required
             />
           </div>
           <div className="flex flex-col gap-2 flex-1" style={{ minWidth: '100px' }}>
             <label className="text-sm font-medium flex items-center gap-2">
-              <Users size={16} style={{ color: 'var(--text-secondary)' }}/>
+              <Users size={16} style={{ color: 'var(--text-secondary)' }} />
               Leave Limit
             </label>
-            <input 
-              type="number" 
-              className="input-field" 
-              value={newLimit} 
+            <input
+              type="number"
+              className="input-field"
+              value={newLimit}
               onChange={(e) => setNewLimit(Number(e.target.value) || 0)}
               min="0"
               required
@@ -235,8 +235,8 @@ export default function AdminSessionsPage() {
           </div>
           <div className="flex flex-col gap-2 flex-none">
             <label className="text-sm font-medium invisible hidden md:block">Submit</label>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn btn-primary"
               disabled={isCreating || !newTime || !newEndTime}
               style={{ padding: '0 24px', height: '42px', fontSize: '1rem', whiteSpace: 'nowrap' }}
@@ -249,7 +249,7 @@ export default function AdminSessionsPage() {
 
       <div className="glass-panel">
         <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '24px' }}>Manage Sessions</h2>
-        
+
         {loading ? (
           <div className="text-sm" style={{ padding: '24px 0' }}>Loading sessions...</div>
         ) : !Array.isArray(classes) || classes.length === 0 ? (
@@ -276,7 +276,7 @@ export default function AdminSessionsPage() {
                   const startTimeStr = c.timeString;
                   const endTimeStr = c.endTimeString || '00:00';
                   const singleLineText = `${dayName} ${c.venue || 'TBD'} ${startTimeStr}-${endTimeStr}`;
-                  
+
                   return (
                     <tr key={c.id}>
                       <td style={{ fontWeight: 500 }}>
@@ -290,8 +290,8 @@ export default function AdminSessionsPage() {
                       </td>
                       <td>
                         {editingId === c.id ? (
-                          <input 
-                            type="number" 
+                          <input
+                            type="number"
                             className="input-field"
                             style={{ padding: '8px 12px', width: '100px' }}
                             value={editValue}
@@ -305,15 +305,15 @@ export default function AdminSessionsPage() {
                       <td style={{ textAlign: 'right' }}>
                         {editingId === c.id ? (
                           <div className="flex gap-2 justify-end">
-                            <button 
-                              className="btn-icon" 
+                            <button
+                              className="btn-icon"
                               style={{ color: 'var(--success)' }}
                               onClick={() => handleSave(c.id)}
                               title="Save Limit"
                             >
                               <Check size={20} />
                             </button>
-                            <button 
+                            <button
                               className="btn-icon"
                               style={{ color: 'var(--text-secondary)' }}
                               onClick={() => setEditingId(null)}
@@ -324,14 +324,14 @@ export default function AdminSessionsPage() {
                           </div>
                         ) : (
                           <div className="flex gap-2 justify-end">
-                            <button 
+                            <button
                               className="btn-icon"
                               onClick={() => handleEdit(c.id, c.leaveLimit)}
                               title="Edit Limit"
                             >
                               <Edit2 size={18} />
                             </button>
-                            <button 
+                            <button
                               className="btn-icon"
                               onClick={() => handleDelete(c.id)}
                               title="Delete Session"
