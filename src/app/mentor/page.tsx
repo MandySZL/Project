@@ -47,6 +47,18 @@ export default function MentorDashboard() {
 
   if (!currentUser) return null;
 
+  const isPastSession = (req: any) => {
+    const requestDate = new Date(req.requestDate);
+    const match = req.sessionText?.match(/(\d{1,2}:\d{2})\s*-\s*\d{1,2}:\d{2}/);
+    if (match) {
+      const [hours, minutes] = match[1].split(':');
+      requestDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    } else {
+      requestDate.setHours(23, 59, 59, 999);
+    }
+    return requestDate.getTime() < new Date().getTime();
+  };
+
   const remainingDays = currentUser.totalLeaveDays - currentUser.usedLeaveDays;
 
   return (
@@ -98,8 +110,8 @@ export default function MentorDashboard() {
                       </span>
                     </td>
                     <td style={{ padding: '12px 8px', textAlign: 'right' }}>
-                      {new Date(req.requestDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? (
-                        <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Past</span>
+                      {isPastSession(req) ? (
+                        <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Completed</span>
                       ) : (
                         <button
                           onClick={() => handleDeleteRequest(req.id)}

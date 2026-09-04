@@ -83,12 +83,16 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     }
 
     const requestDate = new Date(leaveRequest.requestDate);
-    requestDate.setHours(0, 0, 0, 0);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const match = leaveRequest.sessionText?.match(/(\d{1,2}:\d{2})\s*-\s*\d{1,2}:\d{2}/);
+    if (match) {
+      const [hours, minutes] = match[1].split(':');
+      requestDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    } else {
+      requestDate.setHours(23, 59, 59, 999); // Fallback to end of day if time is unparseable
+    }
 
-    if (requestDate.getTime() < today.getTime()) {
-      return NextResponse.json({ error: 'Cannot cancel a leave request for a past date' }, { status: 400 });
+    if (requestDate.getTime() < new Date().getTime()) {
+      return NextResponse.json({ error: 'Cannot cancel a leave request for a past session' }, { status: 400 });
     }
 
     if (leaveRequest.status === 'APPROVED') {
