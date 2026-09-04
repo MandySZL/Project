@@ -82,6 +82,15 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       return NextResponse.json({ error: 'Request not found' }, { status: 404 });
     }
 
+    const requestDate = new Date(leaveRequest.requestDate);
+    requestDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (requestDate.getTime() < today.getTime()) {
+      return NextResponse.json({ error: 'Cannot cancel a leave request for a past date' }, { status: 400 });
+    }
+
     if (leaveRequest.status === 'APPROVED') {
       // Refund the leave days and class limit
       await prisma.$transaction([

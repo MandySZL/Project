@@ -98,12 +98,16 @@ export default function MentorDashboard() {
                       </span>
                     </td>
                     <td style={{ padding: '12px 8px', textAlign: 'right' }}>
-                      <button
-                        onClick={() => handleDeleteRequest(req.id)}
-                        style={{ color: 'var(--danger)', fontSize: '0.875rem', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-                      >
-                        Cancel
-                      </button>
+                      {new Date(req.requestDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? (
+                        <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Past</span>
+                      ) : (
+                        <button
+                          onClick={() => handleDeleteRequest(req.id)}
+                          style={{ color: 'var(--danger)', fontSize: '0.875rem', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                        >
+                          Cancel
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
